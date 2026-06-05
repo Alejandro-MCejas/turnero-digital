@@ -12,8 +12,11 @@ export const getDoctors = async (): Promise<Doctor[]> => {
 }
 
 export const getDoctorById = async (id: string): Promise<Doctor | null> => {
-    return await doctorRepository.findOneBy({ id })
+    const doctor = await doctorRepository.findOneBy({ id })
 
+    if (!doctor) throw new AppError("Doctor not found", 404)
+
+    return doctor
 }
 
 export const createDoctor = async (dto: CreateDoctorDto): Promise<Doctor> => {
@@ -39,6 +42,21 @@ export const deleteDoctor = async (id: string) => {
     if (!existingDoctor) throw new AppError('Doctor not found', 404)
 
     return await doctorRepository.remove(existingDoctor)
+}
 
+export const getDoctorAvailability = async (id: string, date: string) => {
+    const doctor = await doctorRepository.findOne({
+        where: { id },
+        relations: {
+            schedules: true,
+        }
+    })
 
+    if (!doctor) throw new AppError('Doctor not found', 404)
+
+    const dayOfWeek = new Date(date).getDay()
+
+    const schedules = doctor.schedules.filter(schedule => schedule.dayOfWeek === dayOfWeek)
+
+    return schedules
 }

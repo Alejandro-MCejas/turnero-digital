@@ -1,10 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { AppointmentStatus } from "../enums/AppointmentStatus";
 import { User } from "./User";
 import { Doctor } from "./Doctor";
 
 
-
+@Unique(["date", "time", "doctor"])
 @Entity({ name: "appointments" })
 export class Appointment {
     @PrimaryGeneratedColumn("uuid")
@@ -15,6 +15,9 @@ export class Appointment {
 
     @Column()
     time!: string;
+
+    // @Column()
+    // dateTime!: Date;
 
     @Column({ type: "enum", enum: AppointmentStatus, default: AppointmentStatus.PENDING })
     status!: AppointmentStatus;

@@ -15,11 +15,13 @@ export class CreateAppointmentDto {
     @IsUUID()
     userId?: string
 
+    @IsOptional()
     @ValidateIf(o => !o.userId)
     @IsNotEmpty()
     @Length(2, 50)
     guestName?: string
 
+    @IsOptional()
     @ValidateIf(o => !o.userId)
     @IsEmail()
     guestEmail?: string
