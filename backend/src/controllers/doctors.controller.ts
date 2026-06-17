@@ -7,10 +7,9 @@ import {
     createDoctor as createDoctorService,
     updateDoctor as updateDoctorService,
     deleteDoctor as deleteDoctorService,
-    getDoctorAvailability as getDoctorAvailabilityService
+    getDoctorAvailability as getDoctorAvailabilityService,
+    getDoctorAvailableDays as getDoctorAvailableDaysService
 } from "../services/doctors.service"
-
-
 
 
 export const getDoctors = async (req: Request, res: Response) => {
@@ -28,6 +27,11 @@ export const getDoctorAvailability = async (req: Request<{ id: string }>, res: R
     const { date } = req.query
 
     return res.status(200).json(await getDoctorAvailabilityService(id, date as string))
+}
+
+export const getDoctorAvailableDays = async (req: Request<{ id: string }>, res: Response) => {
+    const { id } = req.params
+    return res.status(200).json(await getDoctorAvailableDaysService(id))
 }
 
 export const createDoctor = async (req: Request<{}, {}, CreateDoctorDto>, res: Response) => {

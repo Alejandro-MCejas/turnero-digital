@@ -7,15 +7,32 @@ import { AppError } from "../utils/AppError"
 import { Doctor } from "../entities/Doctor"
 import { AppointmentStatus } from "../enums/AppointmentStatus"
 import { User } from "../entities/User"
-import { buildAppointmentDateTime } from "../utils/date.utils"
+import { buildAppointmentDateTime, getDayOfWeek } from "../utils/date.utils"
+import { DoctorSchedule } from "../entities/DoctorSchedule"
+import { ENV } from "../config/env"
+import { UserRole } from "../enums/UserRole"
 
 
 const appointmentRepository = AppDataSource.getRepository(Appointment)
 const doctorRepository = AppDataSource.getRepository(Doctor)
 const userRepository = AppDataSource.getRepository(User)
+const doctorScheduleRepository = AppDataSource.getRepository(DoctorSchedule)
 
 export const getAppointments = async () => {
     return appointmentRepository.find()
+}
+
+export const getMyAppointments = async (userId: string) => {
+    return appointmentRepository.find({
+        where: {
+            user: { id: userId },
+        },
+        relations: {
+            doctor: true
+        }
+    })
+
+
 }
 
 export const getAppointmentById = async (id: string) => {
@@ -39,7 +56,10 @@ const mapToAppointment = (dto: CreateAppointmentDto, doctor: Doctor): Partial<Ap
 
 export const createAppointment = async (dto: CreateAppointmentDto) => {
 
+    if (!ENV.ALLOW_GUEST_APPOINTMENTS && !dto.userId) throw new AppError("You must be logged in to create an appointment", 401)
+
     const appointmentDate = new Date(dto.date)
+    const dayOfWeek = getDayOfWeek(dto.date)
 
     if (appointmentDate < new Date()) throw new AppError('You cannot create an appointment in the past', 400)
 
@@ -49,6 +69,22 @@ export const createAppointment = async (dto: CreateAppointmentDto) => {
     const doctor = await doctorRepository.findOne({ where: { id: dto.doctorId } })
 
     if (!doctor) throw new AppError('Doctor not found', 404)
+
+    const schedules = await doctorScheduleRepository.find({
+        where: {
+            doctor: { id: dto.doctorId },
+            dayOfWeek
+        }
+    })
+
+    if (schedules.length === 0) throw new AppError("Doctor is not available on this day", 400)
+
+    const isWithinSchedule = schedules.some(schedule => {
+        return dto.time >= schedule.startTime && dto.time < schedule.endTime
+    })
+
+    if (!isWithinSchedule) throw new AppError("Appointment is outside doctor's working hours", 400)
+
 
     if (dto.userId) {
         const user = await userRepository.findOne({ where: { id: dto.userId } })
@@ -84,10 +120,13 @@ export const createAppointment = async (dto: CreateAppointmentDto) => {
 
 }
 
-export const updateAppointment = async (id: string, dto: UpdateAppointmentDto) => {
-    const existingAppointment = await appointmentRepository.findOne({ where: { id } })
+export const updateAppointment = async (id: string, dto: UpdateAppointmentDto, userId: string, role: UserRole) => {
+    const existingAppointment = await appointmentRepository.findOne({ where: { id }, relations: { user: true } })
 
     if (!existingAppointment) throw new AppError("Appointment not found", 404)
+
+    if (role !== UserRole.ADMIN && existingAppointment.user?.id !== userId) throw new AppError("Forbidden", 403)
+
     if (existingAppointment.status === AppointmentStatus.CANCELLED) throw new AppError("Cannot modify a cancelled appointment", 400)
 
     if (dto.status === AppointmentStatus.CANCELLED) {
@@ -107,10 +146,12 @@ export const updateAppointment = async (id: string, dto: UpdateAppointmentDto) =
     return await appointmentRepository.save(existingAppointment)
 }
 
-export const deleteAppointment = async (id: string) => {
-    const existingAppointment = await appointmentRepository.findOne({ where: { id } })
+export const deleteAppointment = async (id: string, userId: string, role: UserRole) => {
+    const existingAppointment = await appointmentRepository.findOne({ where: { id }, relations: { user: true } })
 
     if (!existingAppointment) throw new AppError("Appointment not found", 404)
+
+    if (role !== UserRole.ADMIN && existingAppointment.user?.id !== userId) throw new AppError("Forbidden", 403)
 
     existingAppointment.status = AppointmentStatus.CANCELLED
 

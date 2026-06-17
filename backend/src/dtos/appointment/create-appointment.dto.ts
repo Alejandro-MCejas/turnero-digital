@@ -3,7 +3,7 @@ import { IsDateString, IsEmail, IsNotEmpty, IsOptional, IsUUID, Length, Validate
 export class CreateAppointmentDto {
 
     @IsDateString()
-    date!: Date;
+    date!: string;
 
     @IsNotEmpty()
     time!: string

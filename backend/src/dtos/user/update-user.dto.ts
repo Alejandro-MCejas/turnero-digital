@@ -14,7 +14,7 @@ export class UpdateUserDto {
 
     @IsOptional()
     @IsDateString()
-    birthdate?: Date;
+    birthDate?: Date;
 
     @IsOptional()
     @IsNotEmpty()

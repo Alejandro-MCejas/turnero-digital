@@ -6,7 +6,7 @@ export class UpdateAppointmentDto {
 
     @IsOptional()
     @IsDateString()
-    date?: Date
+    date?: string
 
     @IsOptional()
     @IsNotEmpty()

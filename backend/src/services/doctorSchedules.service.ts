@@ -44,9 +44,35 @@ export const createDoctorSchedule = async (doctorId: string, dto: CreateDoctorSc
 }
 
 export const updateDoctorSchedule = async (id: string, dto: UpdateDoctorScheduleDto) => {
-    const existingSchedule = await doctorSchedulesRepository.findOneBy({ id })
+    const existingSchedule = await doctorSchedulesRepository.findOne({
+        where: { id },
+        relations: {
+            doctor: true
+        }
+    })
 
     if (!existingSchedule) throw new AppError("Doctor schedule not found", 404)
+
+    const startTime = dto.startTime ?? existingSchedule.startTime
+    const endTime = dto.endTime ?? existingSchedule.endTime
+    const dayOfWeek = dto.dayOfWeek ?? existingSchedule.dayOfWeek
+
+    if (startTime >= endTime) throw new AppError('startTime must be earlier than endTime', 400)
+
+    const schedules = await doctorSchedulesRepository.find({
+        where: {
+            doctor: { id: existingSchedule.doctor.id },
+            dayOfWeek
+        }
+    })
+
+    for (const schedule of schedules) {
+        if(schedule.id === existingSchedule.id) continue
+
+        const overlaps = startTime < schedule.endTime && endTime > schedule.startTime
+
+        if (overlaps) throw new AppError("Schedule overlaps with an existing schedule", 400)
+    }
 
     Object.assign(existingSchedule, dto)
 

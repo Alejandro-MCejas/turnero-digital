@@ -14,4 +14,8 @@ export class Credential {
     @OneToOne(() => User, user => user.credential)
     @JoinColumn()
     user!: User
+
+
+    @Column({ type: 'text', nullable: true })
+    refreshToken?: string | null
 }
