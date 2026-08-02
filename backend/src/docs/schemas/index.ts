@@ -1,0 +1,5 @@
+export { authSchemas } from "./auth.schemas"
+export { doctorSchemas } from "./doctors.schemas"
+export { appointmentsSchemas } from "./appointments.schemas"
+export { userSchemas } from "./users.schemas"
+export { doctorSchedulesSchemas } from "./doctorSchedules.schemas"

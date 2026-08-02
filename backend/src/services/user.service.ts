@@ -11,18 +11,21 @@ export const getUsers = async (): Promise<User[]> => {
     return await userRepository.find()
 }
 
-export const getCurrentUser = async (id: string) => {
+export const getCurrentUser = async (id: string): Promise<User> => {
     const user = await userRepository.findOne({ where: { id } })
     if (!user) throw new AppError('User not found', 404)
 
     return user
 }
 
-export const getUserById = async (id: string): Promise<User | null> => {
-    return await userRepository.findOne({ where: { id } })
+export const getUserById = async (id: string): Promise<User> => {
+    const user = await userRepository.findOne({ where: { id } })
+    if (!user) throw new AppError('User not found', 404)
+
+    return user
 }
 
-export const updateUser = async (id: string, user: UpdateUserDto) => {
+export const updateUser = async (id: string, user: UpdateUserDto): Promise<User> => {
     const existingUser = await userRepository.findOne({ where: { id } })
 
     if (!existingUser) throw new AppError('User not found', 404)
@@ -32,7 +35,7 @@ export const updateUser = async (id: string, user: UpdateUserDto) => {
     return await userRepository.save(existingUser)
 }
 
-export const updateUserRole = async (id: string, role: UserRole) => {
+export const updateUserRole = async (id: string, role: UserRole): Promise<User> => {
     const user = await userRepository.findOne({ where: { id } })
     if (!user) throw new AppError('User not found', 404)
 
@@ -43,10 +46,10 @@ export const updateUserRole = async (id: string, role: UserRole) => {
     return await userRepository.save(user)
 }
 
-export const deleteUser = async (id: string) => {
+export const deleteUser = async (id: string): Promise<void> => {
     const existingUser = await userRepository.findOne({ where: { id } })
 
     if (!existingUser) throw new AppError('User not found', 404)
 
-    return await userRepository.remove(existingUser)
+    await userRepository.remove(existingUser)
 }

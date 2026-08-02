@@ -17,7 +17,7 @@ export const getDoctors = async (): Promise<Doctor[]> => {
     return await doctorRepository.find()
 }
 
-export const getDoctorById = async (id: string): Promise<Doctor | null> => {
+export const getDoctorById = async (id: string): Promise<Doctor> => {
     const doctor = await doctorRepository.findOneBy({ id })
 
     if (!doctor) throw new AppError("Doctor not found", 404)
@@ -50,7 +50,7 @@ export const deleteDoctor = async (id: string): Promise<void> => {
     await doctorRepository.remove(existingDoctor)
 }
 
-export const getDoctorAvailability = async (id: string, date: string) => {
+export const getDoctorAvailability = async (id: string, date: string): Promise<string[]> => {
     if (!date) throw new AppError('Date is required', 400)
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new AppError("Invalid date format. Use YYYY-MM-DD", 400)
@@ -94,7 +94,7 @@ export const getDoctorAvailability = async (id: string, date: string) => {
     return freeSlots
 }
 
-export const getDoctorAvailableDays = async (id: string) => {
+export const getDoctorAvailableDays = async (id: string): Promise<number[]> => {
     const doctor = await doctorRepository.findOne({
         where: { id },
         relations: {

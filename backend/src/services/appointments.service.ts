@@ -18,11 +18,11 @@ const doctorRepository = AppDataSource.getRepository(Doctor)
 const userRepository = AppDataSource.getRepository(User)
 const doctorScheduleRepository = AppDataSource.getRepository(DoctorSchedule)
 
-export const getAppointments = async () => {
+export const getAppointments = async (): Promise<Appointment[]> => {
     return appointmentRepository.find()
 }
 
-export const getMyAppointments = async (userId: string) => {
+export const getMyAppointments = async (userId: string): Promise<Appointment[]> => {
     return appointmentRepository.find({
         where: {
             user: { id: userId },
@@ -35,7 +35,7 @@ export const getMyAppointments = async (userId: string) => {
 
 }
 
-export const getAppointmentById = async (id: string) => {
+export const getAppointmentById = async (id: string): Promise<Appointment> => {
     const appointment = await appointmentRepository.findOne({ where: { id } })
 
     if (!appointment) throw new AppError("Appointment not found", 404)
@@ -54,7 +54,7 @@ const mapToAppointment = (dto: CreateAppointmentDto, doctor: Doctor): Partial<Ap
     }
 }
 
-export const createAppointment = async (dto: CreateAppointmentDto) => {
+export const createAppointment = async (dto: CreateAppointmentDto): Promise<Appointment> => {
 
     if (!ENV.ALLOW_GUEST_APPOINTMENTS && !dto.userId) throw new AppError("You must be logged in to create an appointment", 401)
 
@@ -120,7 +120,7 @@ export const createAppointment = async (dto: CreateAppointmentDto) => {
 
 }
 
-export const updateAppointment = async (id: string, dto: UpdateAppointmentDto, userId: string, role: UserRole) => {
+export const updateAppointment = async (id: string, dto: UpdateAppointmentDto, userId: string, role: UserRole): Promise<Appointment> => {
     const existingAppointment = await appointmentRepository.findOne({ where: { id }, relations: { user: true } })
 
     if (!existingAppointment) throw new AppError("Appointment not found", 404)
@@ -146,7 +146,7 @@ export const updateAppointment = async (id: string, dto: UpdateAppointmentDto, u
     return await appointmentRepository.save(existingAppointment)
 }
 
-export const deleteAppointment = async (id: string, userId: string, role: UserRole) => {
+export const deleteAppointment = async (id: string, userId: string, role: UserRole): Promise<Appointment> => {
     const existingAppointment = await appointmentRepository.findOne({ where: { id }, relations: { user: true } })
 
     if (!existingAppointment) throw new AppError("Appointment not found", 404)

@@ -10,6 +10,7 @@ import {
     getDoctorAvailability as getDoctorAvailabilityService,
     getDoctorAvailableDays as getDoctorAvailableDaysService
 } from "../services/doctors.service"
+import { DoctorAvailabilityQuery } from "../types/queries";
 
 
 export const getDoctors = async (req: Request, res: Response) => {
@@ -22,11 +23,11 @@ export const getDoctorById = async (req: Request<{ id: string }>, res: Response)
     return res.status(200).json(await getDoctorByIdService(id))
 }
 
-export const getDoctorAvailability = async (req: Request<{ id: string }>, res: Response) => {
+export const getDoctorAvailability = async (req: Request<{ id: string }, {}, {}, DoctorAvailabilityQuery>, res: Response) => {
     const { id } = req.params
     const { date } = req.query
 
-    return res.status(200).json(await getDoctorAvailabilityService(id, date as string))
+    return res.status(200).json(await getDoctorAvailabilityService(id, date))
 }
 
 export const getDoctorAvailableDays = async (req: Request<{ id: string }>, res: Response) => {

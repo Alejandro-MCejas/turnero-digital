@@ -3,7 +3,7 @@ import { CreateAppointmentDto } from "../dtos/appointment/create-appointment.dto
 import { UpdateAppointmentDto } from "../dtos/appointment/update-appointment.dto";
 import {
     getAppointments as getAppointmentsService,
-    getMyAppintments as getMyAppintmentsService,
+    getMyAppointments as getMyAppointmentsService,
     getAppointmentById as getAppointmentByIdService,
     createAppointment as createAppointmentService,
     updateAppointment as updateAppointmentService,
@@ -16,7 +16,7 @@ export const getAppointments = async (req: Request, res: Response) => {
 }
 
 export const getMyAppointments = async (req: Request, res: Response) => {
-    return res.status(200).json(await getMyAppintmentsService(req.user!.id))
+    return res.status(200).json(await getMyAppointmentsService(req.user!.id))
 }
 
 export const getAppointmentById = async (req: Request<{ id: string }>, res: Response) => {
@@ -26,10 +26,7 @@ export const getAppointmentById = async (req: Request<{ id: string }>, res: Resp
 
 export const createAppointment = async (req: Request<{}, {}, CreateAppointmentDto>, res: Response) => {
     const dto = req.body
-
-    const appointment = await createAppointmentService(dto)
-
-    return res.status(201).json(appointment)
+    return res.status(201).json(await createAppointmentService(dto))
 }
 
 export const updateAppointment = async (req: Request<{ id: string }, {}, UpdateAppointmentDto>, res: Response) => {

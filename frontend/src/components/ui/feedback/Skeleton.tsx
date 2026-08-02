@@ -1,0 +1,11 @@
+
+
+interface SpinnerProps {
+    className?: string
+}
+
+export default function Skeleton({ className = "" }: SpinnerProps) {
+    return (
+        <div className={`animate-pulse rounded-md bg-violet-100/60 ${className}`} />
+    )
+}

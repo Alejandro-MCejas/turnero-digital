@@ -15,7 +15,12 @@ export class Credential {
     @JoinColumn()
     user!: User
 
-
     @Column({ type: 'text', nullable: true })
     refreshToken?: string | null
+
+    @Column({ type: 'text', nullable: true })
+    resetToken?: string | null
+
+    @Column({ type: 'timestamp', nullable: true })
+    resetTokenExpires?: Date | null
 }

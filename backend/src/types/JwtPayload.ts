@@ -7,3 +7,7 @@ export interface JwtPayload {
     exp?: number
 }
 
+export interface RefreshTokenPayload {
+    id: string
+}
+
