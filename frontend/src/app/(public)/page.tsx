@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import CallToActionSection from "@/components/landing/sections/CallToActionSection";
 import FeaturesSection from "@/components/landing/sections/FeaturesSection";
 import Footer from "@/components/landing/sections/Footer";
@@ -21,7 +20,3 @@ export default function Home() {
     </>
   );
 }
-=======
-
-export default function Home() { return <h1>Hola Mundo</h1> }
->>>>>>> develop

@@ -1,28 +1,46 @@
 "use client"
 
-import { Profile } from "@/types/models/profile";
+import { useCurrentUser } from "@/features/users/hooks/useCurrentUser";
 import PersonalInformationCard from "../cards/PersonalInformationCard";
 import ProfileInfoCard from "../cards/ProfileInfoCard";
 import SecurityCard from "../cards/SecurityCard";
 import PageHeader from "@/components/shared/headers/PageHeader";
-import { useState } from "react";
+import Loader from "@/components/ui/feedback/Loader";
 
 export default function ProfileSection() {
 
-    // Después vendrá de la API
+    const { data: user, isLoading, isError } = useCurrentUser()
 
-    const [user, setUser] = useState<Profile>({
-        firstName: "Alejandro",
-        lastName: "Cejas",
-        email: "alejandro@email.com",
-        phone: "3511234567",
-        address: "Córdoba, Argentina",
-        role: "Paciente",
-    })
+    if (isLoading) {
+        return (
+            <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+                <PageHeader
+                    title="Mi Perfil"
+                    subtitle="Consultá y administrá la información de tu cuenta"
+                />
 
-    const [originalUser, setOriginalUser] = useState<Profile>(user);
+                <Loader
+                    title="Cargando perfil"
+                    description="Obteniendo la información de tu cuenta"
+                />
+            </main>
+        )
+    }
 
-    const [isEditing, setIsEditing] = useState(false);
+    if (isError || !user) {
+        return (
+            <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+                <PageHeader
+                    title="Mi Perfil"
+                    subtitle="Consultá y administrá la información de tu cuenta"
+                />
+
+                <div className="py-12 text-center text-slate-500">
+                    No se pudo cargar la información del perfil.
+                </div>
+            </main>
+        )
+    }
 
     return (
         <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
@@ -34,14 +52,7 @@ export default function ProfileSection() {
 
             <ProfileInfoCard user={user} />
 
-            <PersonalInformationCard
-                user={user}
-                setUser={setUser}
-                originalUser={originalUser}
-                setOriginalUser={setOriginalUser}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
-            />
+            <PersonalInformationCard user={user} />
 
             <SecurityCard />
 

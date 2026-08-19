@@ -1,14 +1,24 @@
 "use client"
 import { chartColors } from "@/constants/colors";
-import { appointmentsPerDay } from "@/mocks/dashboard";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { DashboardStats as DashboardStatsModel } from "@/types/models/dashboard";
+import { getDayNameFromDate } from "@/lib/utils/getDayNameFromDate";
+
+interface AppointmentsBarChartProps {
+    byDay: DashboardStatsModel["byDay"]
+}
+
+export default function AppointmentsBarChart({ byDay }: AppointmentsBarChartProps) {
+
+    const chartData = byDay.map(item => ({
+        day: getDayNameFromDate(item.date).slice(0, 3),
+        appointments: item.count
+    }));
 
 
-
-export default function AppointmentsBarChart() {
     return (
         <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={appointmentsPerDay} margin={{
+            <BarChart data={chartData} margin={{
                 top: 10,
                 right: 10,
                 left: 0,
@@ -35,12 +45,13 @@ export default function AppointmentsBarChart() {
                         border: "1px solid #e2e8f0",
                         backgroundColor: "#fff",
                     }} />
-                    
+
                 <Bar
                     dataKey="appointments"
                     name="Turnos"
                     fill={chartColors.primary}
-                    radius={[8, 8, 0, 0]} barSize={28}
+                    radius={[8, 8, 0, 0]} 
+                    barSize={28}
                     isAnimationActive
                     animationDuration={400}
                     activeBar={{

@@ -119,3 +119,27 @@
  *       400:
  *         description: Validation failed, passwords do not match, or token is invalid/expired
  */
+
+/**
+ * @swagger
+ * /auth/change-password:
+ *   put:
+ *     summary: Change user password
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChangePasswordDto'
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Validation failed, passwords do not match
+ *       401:
+ *         description: Unauthorized
+ */

@@ -26,7 +26,7 @@ export const getAppointmentById = async (req: Request<{ id: string }>, res: Resp
 
 export const createAppointment = async (req: Request<{}, {}, CreateAppointmentDto>, res: Response) => {
     const dto = req.body
-    return res.status(201).json(await createAppointmentService(dto))
+    return res.status(201).json(await createAppointmentService(dto, req.user!.id, req.user!.role))
 }
 
 export const updateAppointment = async (req: Request<{ id: string }, {}, UpdateAppointmentDto>, res: Response) => {

@@ -5,13 +5,17 @@ import AppointmentInfoItem from "../../patient/ui/AppointmentInfoItem";
 import Badge from "../../ui/data-display/Badge";
 import Button from "../../ui/buttons/Button";
 import PageHeader from "../../shared/headers/PageHeader";
-import { appointments } from "@/mocks/adminAppointments";
 import { ArrowLeft, CalendarDays, Clock3, Stethoscope, UserRound } from "lucide-react";
-import { getStatusVariant } from "@/lib/utils/getStatusVariant";
 import { useState } from "react";
 import Modal from "../../ui/overlay/Modal";
 import AppointmentForm from "../forms/AppointmentForm";
 import ConfirmDeleteModal from "../../shared/modals/ConfirmDeleteModal";
+import { useAppointment } from "@/features/appointments/hooks/useAppointment";
+import { useDeleteAppointment } from "@/features/appointments/hooks/useDeleteAppointment";
+import { appointmentStatus } from "@/types/enums/appointmentStatus";
+import { appointmentStatusVariant } from "@/constants/status/appointmentStatusVariant";
+import { appointmentStatusLabel } from "@/constants/status/appointmentStatusLabel";
+import Loader from "@/components/ui/feedback/Loader";
 
 
 interface AppointmentDetailSectionProps {
@@ -21,30 +25,54 @@ interface AppointmentDetailSectionProps {
 export default function AppointmentDetailSection({
     appointmentId,
 }: AppointmentDetailSectionProps) {
-    const appointment = appointments.find(
-        appointment => appointment.id === appointmentId
-    );
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    if (!appointment) {
+    const { data: appointment, isLoading, isError } = useAppointment(appointmentId)
+
+    const { mutate: deleteAppointment, isPending: isDeleting } = useDeleteAppointment()
+
+    const handleConfirmDelete = () => {
+        deleteAppointment({ id: appointmentId }, {
+            onSuccess: () => {
+                setIsDeleteModalOpen(false)
+            }
+        })
+    }
+
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <PageHeader
+                    title="Detalle del turno"
+                    subtitle="Cargando información del turno..."
+                />
+
+                <Loader title="Cargando turno..." description="Obteniendo información del turno..." />
+            </div>
+        )
+    }
+
+    if (isError || !appointment) {
         return (
             <div className="space-y-6">
                 <PageHeader
                     title="Turno no encontrado"
-                    subtitle="El turno solicitado no existe."
+                    subtitle="El turno solicitado no existe o no pudo ser cargado."
                 />
 
                 <Link href="/admin/appointments">
                     <Button>
                         <ArrowLeft className="h-4 w-4" />
-                        Volver
+                        Volver a turnos
                     </Button>
                 </Link>
             </div>
-        );
+        )
     }
+
+    const isCancelled = appointment.status === appointmentStatus.CANCELLED
 
     return (
         <div className="space-y-8">
@@ -68,18 +96,18 @@ export default function AppointmentDetailSection({
 
                     <div>
                         <h2 className="text-xl font-semibold">
-                            {appointment.patient}
+                            {appointment.user.name}
                         </h2>
 
                         <p className="text-slate-500">
-                            {appointment.doctor}
+                            {appointment.doctor.name}
                         </p>
                     </div>
 
                     <Badge
-                        variant={getStatusVariant(appointment.status)}
+                        variant={appointmentStatusVariant[appointment.status]}
                     >
-                        {appointment.status}
+                        {appointmentStatusLabel[appointment.status]}
                     </Badge>
 
                 </div>
@@ -89,25 +117,25 @@ export default function AppointmentDetailSection({
                     <AppointmentInfoItem
                         icon={UserRound}
                         label="Paciente"
-                        value={appointment.patient}
+                        value={appointment.user.name}
                     />
 
                     <AppointmentInfoItem
                         icon={Stethoscope}
                         label="Médico"
-                        value={appointment.doctor}
+                        value={appointment.doctor.name}
                     />
 
                     <AppointmentInfoItem
                         icon={Stethoscope}
                         label="Especialidad"
-                        value={appointment.specialty}
+                        value={appointment.doctor.specialty}
                     />
 
                     <AppointmentInfoItem
                         icon={CalendarDays}
                         label="Fecha"
-                        value={appointment.date}
+                        value={appointment.date.split("T")[0]}
                     />
 
                     <AppointmentInfoItem
@@ -118,46 +146,60 @@ export default function AppointmentDetailSection({
 
                 </div>
 
-                <div className="mt-10 flex justify-end gap-3">
+                {!isCancelled && (
+                    <div className="mt-10 flex justify-end gap-3">
 
-                    <Button
-                        variant="secondary"
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        Editar turno
-                    </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setIsModalOpen(true)}
+                        >
+                            Editar turno
+                        </Button>
 
-                    <Button
-                        variant="danger"
-                        onClick={() => setIsDeleteModalOpen(true)}
-                    >
-                        Cancelar turno
-                    </Button>
+                        <Button
+                            variant="danger"
+                            onClick={() => setIsDeleteModalOpen(true)}
+                        >
+                            Cancelar turno
+                        </Button>
 
-                </div>
+                    </div>
+                )}
 
             </section>
 
-            <Modal
-                open={isModalOpen}
-                title="Editar turno"
-                subtitle="Modifica la información del turno."
-                onClose={() => setIsModalOpen(false)}
-                size="lg"
-            >
-                <AppointmentForm appointment={appointment} onCancel={() => setIsModalOpen(false)} />
-            </Modal>
+            {!isCancelled && (
+                <Modal
+                    open={isModalOpen}
+                    title="Editar turno"
+                    subtitle="Modifica la información del turno."
+                    onClose={() => setIsModalOpen(false)}
+                    size="lg"
+                >
+                    <AppointmentForm appointment={appointment} onCancel={() => setIsModalOpen(false)} />
+                </Modal>
+            )}
 
-            <ConfirmDeleteModal
-                open={isDeleteModalOpen}
-                title="Confirmar cancelación"
-                heading="¿Cancelar turno"
-                confirmText="Cancelar turno"
-                message={`El turno de ${appointment.patient} será cancelado permanentemente.\nEsta acción no se puede deshacer.`}
-                entity="turno"
-                onCancel={() => setIsDeleteModalOpen(false)}
-                onConfirm={() => setIsDeleteModalOpen(false)}
-            />
+            {!isCancelled && (
+                <ConfirmDeleteModal
+                    open={isDeleteModalOpen}
+                    title="Confirmar cancelación"
+                    heading="¿Cancelar turno"
+                    confirmText={
+                        isDeleting
+                            ? "Cancelando..."
+                            : "Cancelar turno"
+                    }
+                    message={`El turno de ${appointment.user.name} será cancelado permanentemente.\nEsta acción no se puede deshacer.`}
+                    entity="turno"
+                    onCancel={() => {
+                        if (isDeleting) return;
+
+                        setIsDeleteModalOpen(false);
+                    }}
+                    onConfirm={handleConfirmDelete}
+                />
+            )}
 
         </div>
     );

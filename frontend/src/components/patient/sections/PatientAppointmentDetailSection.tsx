@@ -3,13 +3,18 @@
 import PageHeader from "@/components/shared/headers/PageHeader";
 import Badge from "@/components/ui/data-display/Badge";
 import Button from "@/components/ui/buttons/Button";
-import { appointments } from "@/mocks/patientAppointments"
 import { getStatusVariant } from "@/lib/utils/getStatusVariant";
-import { ArrowLeft, CalendarDays, Clock3, MapPin, Stethoscope } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock3, Stethoscope } from "lucide-react";
 import Link from "next/link";
 import AppointmentInfoItem from "../ui/AppointmentInfoItem";
 import { useState } from "react";
 import ConfirmCancelAppointmentModal from "../modals/ConfirmCancelAppointmentModal";
+import { useMyAppointments } from "@/features/appointments/hooks/useMyAppointments";
+import Loader from "@/components/ui/feedback/Loader";
+import { appointmentStatusLabel } from "@/constants/status/appointmentStatusLabel";
+import { formatDate } from "@/lib/utils/formatDate";
+import { appointmentStatus } from "@/types/enums/appointmentStatus";
+import { useUpdateAppointment } from "@/features/appointments/hooks/useUpdateAppointment";
 
 
 interface PatientAppointmentDetailSectionProps {
@@ -20,9 +25,37 @@ export default function PatientAppointmentDetailSection({ appointmentId }: Patie
 
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
-    const appointment = appointments.find(
-        (appointment) => appointment.id === appointmentId
-    );
+    const { data: appointments = [], isLoading, isError } = useMyAppointments();
+
+    const updateAppointmentMutation = useUpdateAppointment();
+
+    if (isLoading) {
+        return (
+            <Loader title="Cargando turno" description="Obteniendo información..." />
+        )
+    }
+
+    if (isError) {
+        return (
+            <div className="space-y-6">
+
+                <PageHeader
+                    title="Error al cargar el turno"
+                    subtitle="No pudimos obtener la información del turno."
+                />
+
+                <Link href="/patient/appointments">
+                    <Button>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Volver a mis turnos
+                    </Button>
+                </Link>
+
+            </div>
+        )
+    }
+
+    const appointment = appointments.find(appointment => appointment.id === appointmentId)
 
     if (!appointment) {
         return (
@@ -30,19 +63,14 @@ export default function PatientAppointmentDetailSection({ appointmentId }: Patie
 
                 <PageHeader
                     title="Turno no encontrado"
-                    subtitle="El turno solicitado no existe."
+                    subtitle="El turno solicitado no existe o no está asociado a tu cuenta."
                 />
 
                 <Link href="/patient/appointments">
-
                     <Button>
-
                         <ArrowLeft className="mr-2 h-4 w-4" />
-
                         Volver
-
                     </Button>
-
                 </Link>
 
             </div>
@@ -71,26 +99,16 @@ export default function PatientAppointmentDetailSection({ appointmentId }: Patie
                 <div className="mb-6 flex items-center justify-between">
 
                     <div>
+                        <h2 className="text-xl font-semibold">{appointment.doctor.name}</h2>
 
-                        <h2 className="text-xl font-semibold">
-
-                            {appointment.doctor}
-
-                        </h2>
-
-                        <p className="text-slate-500">
-
-                            {appointment.specialty}
-
-                        </p>
-
+                        <p className="text-slate-500">{appointment.doctor.specialty}</p>
                     </div>
 
                     <Badge
                         variant={getStatusVariant(appointment.status)}
                         className="px-3 py-1 text-sm"
                     >
-                        {appointment.status}
+                        {appointmentStatusLabel[appointment.status]}
                     </Badge>
 
                 </div>
@@ -100,7 +118,7 @@ export default function PatientAppointmentDetailSection({ appointmentId }: Patie
                     <AppointmentInfoItem
                         icon={CalendarDays}
                         label="Fecha"
-                        value={appointment.date}
+                        value={formatDate(appointment.date)}
                     />
 
                     <AppointmentInfoItem
@@ -112,39 +130,47 @@ export default function PatientAppointmentDetailSection({ appointmentId }: Patie
                     <AppointmentInfoItem
                         icon={Stethoscope}
                         label="Especialidad"
-                        value={appointment.specialty}
+                        value={appointment.doctor.specialty}
                     />
-
-                    <div className="md:col-span-2">
-
-                        <AppointmentInfoItem
-                            icon={MapPin}
-                            label="Dirección"
-                            value={appointment.address}
-                        />
-
-                    </div>
 
                 </div>
 
-                {appointment.status !== "Cancelado" && (
-                    <div className="mt-10 flex justify-end">
-                        <Button
-                            variant="danger"
-                            onClick={() => {
-                                setIsCancelModalOpen(true)
-                            }}
-                        >
-                            Cancelar turno
-                        </Button>
-                    </div>
-                )}
+                {(
+                    appointment.status === appointmentStatus.PENDING ||
+                    appointment.status === appointmentStatus.CONFIRMED
+                ) && (
+                        <div className="mt-10 flex justify-end">
+
+                            <Button
+                                variant="danger"
+                                onClick={() => setIsCancelModalOpen(true)}
+                            >
+                                Cancelar turno
+                            </Button>
+
+                        </div>
+                    )}
             </section>
 
             <ConfirmCancelAppointmentModal
                 open={isCancelModalOpen}
                 onCancel={() => setIsCancelModalOpen(false)}
-                onConfirm={() => setIsCancelModalOpen(false)}
+                onConfirm={() => {
+                    updateAppointmentMutation.mutate(
+                        {
+                            id: appointment.id,
+                            dto: {
+                                status: appointmentStatus.CANCELLED
+                            }
+                        },
+                        {
+                            onSuccess: () => {
+                                setIsCancelModalOpen(false)
+                            }
+                        }
+                    )
+                }}
+                isLoading={updateAppointmentMutation.isPending}
             />
 
 

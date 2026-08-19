@@ -8,7 +8,7 @@ export class DoctorSchedule {
     @PrimaryGeneratedColumn("uuid")
     id!: string
 
-    @Column({ type: "enum", enum: DoctorScheduleDay})
+    @Column({ type: "enum", enum: DoctorScheduleDay })
     dayOfWeek!: DoctorScheduleDay
 
     @Column()
@@ -17,6 +17,6 @@ export class DoctorSchedule {
     @Column()
     endTime!: string
 
-    @ManyToOne(() => Doctor, doctor => doctor.schedules)
+    @ManyToOne(() => Doctor, doctor => doctor.schedules, { onDelete: "CASCADE" })
     doctor!: Doctor
 }

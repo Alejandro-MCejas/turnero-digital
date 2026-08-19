@@ -2,6 +2,7 @@ import Badge from "../../ui/data-display/Badge"
 import Avatar from "../../ui/data-display/Avatar"
 import type { AppointmentStatus } from "@/types/enums/appointmentStatus"
 import { appointmentStatusVariant } from "@/constants/status/appointmentStatusVariant"
+import { appointmentStatusLabel } from "@/constants/status/appointmentStatusLabel"
 
 
 interface TodayAgendaProps {
@@ -31,7 +32,7 @@ export default function TodayAgendaItem({ patient, specialty, time, status }: To
                         <p className="truncate text-sm text-slate-500">{specialty}</p>
 
                         <Badge variant={appointmentStatusVariant[status]} className="shrink-0">
-                            {status}
+                            {appointmentStatusLabel[status]}
                         </Badge>
 
                     </div>

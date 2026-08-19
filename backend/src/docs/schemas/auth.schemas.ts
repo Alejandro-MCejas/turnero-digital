@@ -87,5 +87,24 @@ export const authSchemas = {
                 example: "123456"
             }
         }
+    },
+
+    ChangePasswordDto: {
+        type: "object",
+        required: ["currentPassword", "newPassword", "confirmPassword"],
+        properties: {
+            currentPassword: {
+                type: "string",
+                example: "Password123"
+            },
+            newPassword: {
+                type: "string",
+                example: "Password456"
+            },
+            confirmPassword: {
+                type: "string",
+                example: "Password456"
+            }
+        }
     }
 }

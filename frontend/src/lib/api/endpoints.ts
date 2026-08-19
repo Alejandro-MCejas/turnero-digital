@@ -5,5 +5,6 @@ export const API_ENDPOINTS = {
     users: "/users",
     doctors: "/doctors",
     appointments: "/appointments",
-    schedules: "/schedules"
+    doctorSchedules: "/doctor-schedules",
+    dashboard: "/dashboard"
 }

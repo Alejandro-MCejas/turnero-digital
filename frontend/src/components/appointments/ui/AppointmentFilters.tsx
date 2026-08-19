@@ -1,7 +1,8 @@
-import { doctors } from "@/mocks/doctors";
 import Input from "../../ui/forms/Input";
 import Select from "../../ui/forms/Select";
 import Button from "../../ui/buttons/Button";
+import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { appointmentStatus } from "@/types/enums/appointmentStatus";
 
 interface AppointmentFiltersProps {
     search: string;
@@ -28,6 +29,10 @@ export default function AppointmentFilters({
     onDateChange,
     onClearFilters,
 }: AppointmentFiltersProps) {
+
+    const { data: doctors = [], isLoading: isLoadingDoctors } = useDoctors()
+
+
     return (
         <div className="flex flex-wrap gap-3">
             <Input
@@ -44,23 +49,26 @@ export default function AppointmentFilters({
                 onChange={(e) => onStatusChange(e.target.value)}
             >
                 <option value="">Todos los estados</option>
-                <option value="Confirmado">Confirmado</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Cancelado">Cancelado</option>
-                <option value="Completado">Completado</option>
+                <option value={appointmentStatus.CONFIRMED}>Confirmado</option>
+                <option value={appointmentStatus.PENDING}>Pendiente</option>
+                <option value={appointmentStatus.CANCELLED}>Cancelado</option>
+                <option value={appointmentStatus.COMPLETED}>Completado</option>
             </Select>
 
             <Select
                 className="w-44"
                 value={doctorFilter}
                 onChange={(e) => onDoctorChange(e.target.value)}
+                disabled={isLoadingDoctors}
             >
-                <option value="">Todos los médicos</option>
+                <option value="">
+                    {isLoadingDoctors ? "Cargando médicos..." : "Todos los médicos"}
+                </option>
 
                 {doctors.map((doctor) => (
                     <option
                         key={doctor.id}
-                        value={doctor.name}
+                        value={doctor.id}
                     >
                         {doctor.name}
                     </option>
@@ -76,6 +84,7 @@ export default function AppointmentFilters({
 
             {(search || statusFilter || doctorFilter || dateFilter) && (
                 <Button
+                    type="button"
                     variant="secondary"
                     onClick={onClearFilters}
                 >

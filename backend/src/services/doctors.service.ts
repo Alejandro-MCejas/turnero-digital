@@ -1,4 +1,4 @@
-import { Between } from "typeorm"
+import { Between, Not } from "typeorm"
 import { APPOINTMENT_INTERVAL } from "../config/constants"
 import { AppDataSource } from "../config/data-source"
 import { CreateDoctorDto } from "../dtos/doctor/create-doctor.dto"
@@ -7,7 +7,8 @@ import { Appointment } from "../entities/Appointment"
 import { Doctor } from "../entities/Doctor"
 import { AppError } from "../utils/AppError"
 import { generateTimeSlots } from "../utils/generateTimeSlots"
-import { getDayOfWeek } from "../utils/date.utils"
+import { getDayOfWeek, parseDateOnly } from "../utils/date.utils"
+import { AppointmentStatus } from "../enums/AppointmentStatus"
 
 
 const doctorRepository = AppDataSource.getRepository(Doctor)
@@ -26,6 +27,13 @@ export const getDoctorById = async (id: string): Promise<Doctor> => {
 }
 
 export const createDoctor = async (dto: CreateDoctorDto): Promise<Doctor> => {
+
+    const existingDoctor = await doctorRepository.findOne({
+        where: { name: dto.name }
+    })
+
+    if (existingDoctor) throw new AppError("Doctor already exists", 400)
+
     return await doctorRepository.save(
         doctorRepository.create(dto)
     )
@@ -37,6 +45,14 @@ export const updateDoctor = async (id: string, dto: UpdateDoctorDto): Promise<Do
 
     if (!existingDoctor) throw new AppError("Doctor not found", 404)
 
+    if (dto.name) {
+        const doctorWithSameName = await doctorRepository.findOne({
+            where: { name: dto.name }
+        })
+
+        if (doctorWithSameName && doctorWithSameName.id !== id) throw new AppError("Doctor already exists", 400)
+    }
+
     Object.assign(existingDoctor, dto)
 
     return await doctorRepository.save(existingDoctor)
@@ -46,6 +62,10 @@ export const deleteDoctor = async (id: string): Promise<void> => {
     const existingDoctor = await doctorRepository.findOneBy({ id })
 
     if (!existingDoctor) throw new AppError('Doctor not found', 404)
+
+    const appointments = await appointmentsRepository.count({ where: { doctor: { id } } })
+
+    if (appointments > 0) throw new AppError('Cannot delete doctor with associated appointments', 400)
 
     await doctorRepository.remove(existingDoctor)
 }
@@ -74,16 +94,16 @@ export const getDoctorAvailability = async (id: string, date: string): Promise<s
         availableSlots.push(...generateTimeSlots(schedule.startTime, schedule.endTime, APPOINTMENT_INTERVAL))
     }
 
-    const start = new Date(date)
-    start.setHours(0, 0, 0, 0)
+    const start = parseDateOnly(date)
 
-    const end = new Date(date)
+    const end = parseDateOnly(date)
     end.setHours(23, 59, 59, 999)
 
     const appointments = await appointmentsRepository.find({
         where: {
             doctor: { id },
-            date: Between(start, end)
+            date: Between(start, end),
+            status: Not(AppointmentStatus.CANCELLED)
         }
     })
 

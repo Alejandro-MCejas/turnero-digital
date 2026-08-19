@@ -1,59 +1,76 @@
-import { Profile } from "@/types/models/profile";
 import Button from "@/components/ui/buttons/Button";
-import { Mail, MapPin, Phone, User } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+import { CalendarDays, CreditCard, Mail, User } from "lucide-react";
 import EditableProfileField from "../ui/EditableProfileField";
-import { toast } from "sonner";
+import { User as UserModel } from "@/types/models/user";
+import { useState } from "react";
+import { useUpdateCurrentUser } from "@/features/users/hooks/useUpdateCurrentUser";
+import { UpdateUserDto } from "@/features/users/dto/updateUser.dto";
 
 
 interface PersonalInformationCardProps {
-    user: Profile
-    setUser: Dispatch<SetStateAction<Profile>>
-
-    originalUser: Profile;
-    setOriginalUser: Dispatch<SetStateAction<Profile>>;
-
-    isEditing: boolean
-    setIsEditing: Dispatch<SetStateAction<boolean>>
-
-
+    user: UserModel
 }
 
-export default function PersonalInformationCard({
-    user,
-    setUser,
-    originalUser,
-    setOriginalUser,
-    isEditing,
-    setIsEditing,
-}: PersonalInformationCardProps) {
+interface ProfileFormData {
+    name: string;
+    email: string;
+    birthDate: string;
+    nDni: string;
+}
 
-    function handleSave() {
-        setOriginalUser(user);
-        setIsEditing(false);
+const getFormData = (user: UserModel): ProfileFormData => ({
+    name: user.name,
+    email: user.email,
+    birthDate: user.birthDate
+        ? user.birthDate.split("T")[0]
+        : "",
+    nDni: user.nDni
+});
 
-        toast.success("Perfil actualizado correctamente");
-    }
+export default function PersonalInformationCard({ user }: PersonalInformationCardProps) {
 
-    function handleEdit() {
+    const [isEditing, setIsEditing] = useState(false);
 
-        if (!isEditing) {
-            setOriginalUser(user);
-            setIsEditing(true);
-            return;
-        }
+    const [formData, setFormData] = useState<ProfileFormData>(() => getFormData(user));
 
-        setUser(originalUser);
-        setIsEditing(false);
-    }
+    const { mutate: updateCurrentUser, isPending: isUpdating } = useUpdateCurrentUser();
 
-    const hasChanges = JSON.stringify(user) !== JSON.stringify(originalUser);
+    const originalData = getFormData(user);
+
+    const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+
+    const handleEdit = () => {
+
+        if (isUpdating) return;
+
+        setFormData(getFormData(user));
+        setIsEditing(prev => !prev);
+    };
+
+    const handleSave = () => {
+
+        if (!hasChanges || isUpdating) return;
+
+        const updateData: UpdateUserDto = {
+            name: formData.name,
+            email: formData.email,
+            birthDate: formData.birthDate,
+            nDni: formData.nDni
+        };
+
+        updateCurrentUser(updateData, {
+            onSuccess: () => {
+                setIsEditing(false);
+            }
+        });
+    };
+
 
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
 
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-2xl font-bold text-slate-900">
+                <h2 className="text-2xl font-bold text-slate-900 text-center sm:text-left">
                     Información personal
                 </h2>
 
@@ -62,18 +79,26 @@ export default function PersonalInformationCard({
                     {isEditing && hasChanges && (
                         <Button
                             onClick={handleSave}
+                            disabled={isUpdating}
                             className="justify-center sm:w-auto"
                         >
-                            Guardar cambios
+                            {isUpdating
+                                ? "Guardando..."
+                                : "Guardar cambios"
+                            }
                         </Button>
                     )}
 
                     <Button
                         variant="secondary"
                         onClick={handleEdit}
+                        disabled={isUpdating}
                         className="justify-center sm:w-auto"
                     >
-                        {isEditing ? "Cancelar" : "Editar perfil"}
+                        {isEditing
+                            ? "Cancelar"
+                            : "Editar perfil"
+                        }
                     </Button>
 
                 </div>
@@ -84,43 +109,40 @@ export default function PersonalInformationCard({
                 <EditableProfileField
                     icon={<User className="h-4 w-4" />}
                     label="Nombre"
-                    value={user.firstName}
-                    disabled={!isEditing}
-                    onChange={value => setUser({ ...user, firstName: value })}
-                />
-
-                <EditableProfileField
-                    label="Apellido"
-                    value={user.lastName}
-                    disabled={!isEditing}
-                    onChange={value => setUser({ ...user, lastName: value })}
+                    value={formData.name}
+                    disabled={!isEditing || isUpdating}
+                    onChange={value => setFormData({ ...formData, name: value })}
                 />
 
                 <EditableProfileField
                     icon={<Mail className="h-4 w-4" />}
                     label="Correo electrónico"
-                    value={user.email}
-                    disabled={!isEditing}
-                    onChange={value => setUser({ ...user, email: value })}
+                    value={formData.email}
+                    disabled={!isEditing || isUpdating}
+                    onChange={value => setFormData({ ...formData, email: value })}
                 />
 
                 <EditableProfileField
-                    icon={<Phone className="h-4 w-4" />}
-                    label="Teléfono"
-                    value={user.phone}
-                    disabled={!isEditing}
-                    onChange={value => setUser({ ...user, phone: value })}
+                    icon={<CalendarDays className="h-4 w-4" />}
+                    label="Fecha de nacimiento"
+                    value={formData.birthDate}
+                    type="date"
+                    disabled={!isEditing || isUpdating}
+                    onChange={(value) =>
+                        setFormData({
+                            ...formData,
+                            birthDate: value
+                        })
+                    }
                 />
 
-                <div className="md:col-span-2">
-                    <EditableProfileField
-                        icon={<MapPin className="h-4 w-4" />}
-                        label="Dirección"
-                        value={user.address}
-                        disabled={!isEditing}
-                        onChange={value => setUser({ ...user, address: value })}
-                    />
-                </div>
+                <EditableProfileField
+                    icon={<CreditCard className="h-4 w-4" />}
+                    label="DNI"
+                    value={formData.nDni}
+                    disabled={!isEditing || isUpdating}
+                    onChange={(value) => setFormData({ ...formData, nDni: value })}
+                />
 
             </div>
 

@@ -1,3 +1,6 @@
+"use client"
+
+import PatientRouteGuard from "@/components/auth/PatientRouteGuard"
 import PatientShell from "@/components/layout/PatientShell"
 
 
@@ -7,7 +10,10 @@ interface PatientLayoutProps {
 
 export default function PatientLayout({ children }: PatientLayoutProps) {
     return (
-        <PatientShell>{children}</PatientShell>
+        <PatientRouteGuard>
+            <PatientShell>
+                {children}
+            </PatientShell>
+        </PatientRouteGuard>
     )
-
 }

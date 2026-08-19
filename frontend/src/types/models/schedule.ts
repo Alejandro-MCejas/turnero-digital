@@ -1,9 +1,10 @@
+import { DoctorScheduleDay } from "../enums/doctorScheduleDay";
 
 
 export interface Schedule {
+    id: string;
     doctorId: string;
-    day: string;
-    start: string;
-    end: string;
-    appointmentDuration: number
+    dayOfWeek: DoctorScheduleDay;
+    startTime: string;
+    endTime: string;
 }

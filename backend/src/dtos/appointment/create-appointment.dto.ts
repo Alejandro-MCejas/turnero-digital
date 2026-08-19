@@ -1,4 +1,4 @@
-import { IsDateString, IsEmail, IsNotEmpty, IsOptional, IsUUID, Length, ValidateIf } from "class-validator";
+import { IsDateString, IsNotEmpty, IsOptional, IsUUID } from "class-validator";
 
 export class CreateAppointmentDto {
 
@@ -14,15 +14,4 @@ export class CreateAppointmentDto {
     @IsOptional()
     @IsUUID()
     userId?: string
-
-    @IsOptional()
-    @ValidateIf(o => !o.userId)
-    @IsNotEmpty()
-    @Length(2, 50)
-    guestName?: string
-
-    @IsOptional()
-    @ValidateIf(o => !o.userId)
-    @IsEmail()
-    guestEmail?: string
 }

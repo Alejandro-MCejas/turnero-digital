@@ -1,8 +1,9 @@
 import Avatar from "@/components/ui/data-display/Avatar";
-import { Profile } from "@/types/models/profile";
+import { userRoleLabel } from "@/constants/user/userRoleLabel";
+import { User } from "@/types/models/user";
 
 interface ProfileInfoCardProps {
-    user: Profile
+    user: User
 }
 
 export default function ProfileInfoCard({ user }: ProfileInfoCardProps) {
@@ -14,18 +15,18 @@ export default function ProfileInfoCard({ user }: ProfileInfoCardProps) {
 
                 <div className="shrink-0">
                     <Avatar
-                        name={`${user.firstName} ${user.lastName}`}
+                        name={user.name}
                         size="lg"
                     />
                 </div>
 
                 <div className="min-w-0">
                     <h1 className="break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
-                        {user.firstName} {user.lastName}
+                        {user.name}
                     </h1>
 
                     <p className="mt-1 text-slate-500">
-                        {user.role}
+                        {userRoleLabel[user.role]}
                     </p>
                 </div>
 

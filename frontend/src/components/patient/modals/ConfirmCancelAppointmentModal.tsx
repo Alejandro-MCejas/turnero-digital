@@ -7,10 +7,11 @@ interface ConfirmCancelAppointmentModalProps {
     open: boolean
     onCancel: () => void
     onConfirm: () => void
+    isLoading?: boolean
 }
 
 
-export default function ConfirmCancelAppointmentModal({ open, onCancel, onConfirm }: ConfirmCancelAppointmentModalProps) {
+export default function ConfirmCancelAppointmentModal({ open, onCancel, onConfirm, isLoading }: ConfirmCancelAppointmentModalProps) {
     return (
         <Modal
             open={open}
@@ -37,6 +38,7 @@ export default function ConfirmCancelAppointmentModal({ open, onCancel, onConfir
                     <Button
                         variant="secondary"
                         onClick={onCancel}
+                        disabled={isLoading}
                         className="justify-center sm:w-auto"
                     >
                         Volver
@@ -44,9 +46,10 @@ export default function ConfirmCancelAppointmentModal({ open, onCancel, onConfir
                     <Button
                         variant="danger"
                         onClick={onConfirm}
+                        disabled={isLoading}
                         className="justify-center sm:w-auto"
                     >
-                        Cancelar turno
+                        {isLoading ? "Cancelando..." : "Cancelar turno"}
                     </Button>
                 </div>
             </div>

@@ -3,7 +3,7 @@ import { verifyAccessToken } from "../utils/jwt";
 import { extractTokenFromHeader } from "../utils/auth";
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const token = extractTokenFromHeader(req)
+    const token = req.cookies.accessToken ?? extractTokenFromHeader(req)
 
     if (!token) return res.status(401).json({ message: "Token required" })
 

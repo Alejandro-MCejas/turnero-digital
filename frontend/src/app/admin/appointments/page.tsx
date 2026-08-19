@@ -10,11 +10,13 @@ import PageHeader from "@/components/shared/headers/PageHeader";
 import Button from "@/components/ui/buttons/Button";
 import Modal from "@/components/ui/overlay/Modal";
 import Table from "@/components/ui/data-display/Table";
-import { appointments } from "@/mocks/adminAppointments";
 import { Appointment } from "@/types/models/appointment";
 import { CalendarDays } from "lucide-react";
 import { useState } from "react";
 import TableToolbar from "@/components/shared/tables/TableToolbar";
+import { useAppointments } from "@/features/appointments/hooks/useAppointments";
+import { useDeleteAppointment } from "@/features/appointments/hooks/useDeleteAppointment";
+import Loader from "@/components/ui/feedback/Loader";
 
 
 
@@ -22,25 +24,31 @@ export default function AppointmentsPage() {
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null)
+
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState("")
     const [doctorFilter, setDoctorFilter] = useState("")
     const [dateFilter, setDateFilter] = useState("")
 
+    const { data: appointments = [], isLoading } = useAppointments()
+
+    const { mutate: deleteAppointment, isPending: isDeleting } = useDeleteAppointment()
+
 
     const filteredAppointments = appointments.filter(appointment => {
         const matchesSearch =
-            appointment.patient.toLowerCase().includes(search.toLowerCase()) ||
-            appointment.doctor.toLowerCase().includes(search.toLowerCase()) ||
-            appointment.specialty.toLowerCase().includes(search.toLowerCase())
+            appointment.user.name.toLowerCase().includes(search.toLowerCase()) ||
+            appointment.doctor.name.toLowerCase().includes(search.toLowerCase()) ||
+            appointment.doctor.specialty.toLowerCase().includes(search.toLowerCase())
 
         const matchesStatus = !statusFilter || appointment.status === statusFilter
 
-        const matchesDoctor = !doctorFilter || appointment.doctor === doctorFilter
+        const matchesDoctor = !doctorFilter || appointment.doctor.id === doctorFilter
 
-        const matchesDate = !dateFilter || appointment.date === dateFilter
+        const matchesDate = !dateFilter || appointment.date.split("T")[0] === dateFilter
 
         return (
             matchesSearch &&
@@ -72,6 +80,18 @@ export default function AppointmentsPage() {
         setIsDeleteModalOpen(true);
     };
 
+    const handleConfirmDelete = () => {
+
+        if (!appointmentToDelete) return
+
+        deleteAppointment({ id: appointmentToDelete.id }, {
+            onSuccess: () => {
+                setAppointmentToDelete(null)
+                setIsDeleteModalOpen(false)
+            }
+        })
+    }
+
 
     return (
         <div className="space-y-6">
@@ -98,7 +118,12 @@ export default function AppointmentsPage() {
 
             </TableToolbar>
 
-            {appointments.length === 0 ? (
+            {isLoading ? (
+
+                <Loader title="Cargando turnos..." description="Obteniendo turnos del sistema..." />
+
+            ) : appointments.length === 0 ? (
+
                 <EmptyState
                     icon={<CalendarDays className="h-14 w-14" />}
                     title="Todavía no hay turnos"
@@ -161,21 +186,24 @@ export default function AppointmentsPage() {
                 open={isDeleteModalOpen}
                 title="Confirmar cancelación"
                 heading="¿Cancelar turno"
-                confirmText="Cancelar turno"
+                confirmText={
+                    isDeleting
+                        ? "Cancelando..."
+                        : "Cancelar turno"
+                }
                 message={
                     appointmentToDelete
-                        ? `El turno de ${appointmentToDelete.patient} será cancelado permanentemente. \nEsta acción no se puede deshacer.`
+                        ? `El turno de ${appointmentToDelete.user.name} será cancelado permanentemente. \nEsta acción no se puede deshacer.`
                         : ""
                 }
                 entity="turno"
                 onCancel={() => {
+                    if (isDeleting) return
+
                     setAppointmentToDelete(null)
                     setIsDeleteModalOpen(false)
                 }}
-                onConfirm={() => {
-                    setAppointmentToDelete(null)
-                    setIsDeleteModalOpen(false)
-                }}
+                onConfirm={handleConfirmDelete}
 
             />
         </div>

@@ -1,9 +1,7 @@
 import { Doctor } from "@/types/models/doctor";
 import Avatar from "../../ui/data-display/Avatar";
-import Badge from "../../ui/data-display/Badge";
 import Button from "../../ui/buttons/Button";
 import { Pencil, Trash } from "lucide-react";
-import { doctorStatusVariant } from "@/types/enums/doctorStatus";
 
 
 interface DoctorItemProps {
@@ -22,11 +20,6 @@ export default function DoctorItem({ doctor, onEdit, onDelete }: DoctorItemProps
                 </div>
             </td>
             <td className="px-6 py-5">{doctor.specialty}</td>
-            <td className="px-6 py-5">{doctor.email}</td>
-            <td className="px-6 py-5">{doctor.phone}</td>
-            <td className="px-6 py-5 text-center">
-                <Badge variant={doctorStatusVariant[doctor.status]}>{doctor.status}</Badge>
-            </td>
             <td className="px-6 py-5">
                 <div className="flex justify-center gap-2">
                     <Button variant="secondary" onClick={() => onEdit(doctor)}>

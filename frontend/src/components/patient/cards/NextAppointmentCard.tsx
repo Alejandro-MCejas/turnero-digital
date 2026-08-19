@@ -1,12 +1,12 @@
 import Badge from "@/components/ui/data-display/Badge"
 import Button from "@/components/ui/buttons/Button"
 import { getStatusVariant } from "@/lib/utils/getStatusVariant"
-import { PatientAppointment } from "@/types/models/patient"
 import { CalendarDays, Clock3, Stethoscope } from "lucide-react"
 import Link from "next/link"
+import { Appointment } from "@/types/models/appointment"
 
 interface NextAppointmentCardProps {
-    appointment: PatientAppointment
+    appointment: Appointment
 }
 
 export default function NextAppointmentCard({ appointment }: NextAppointmentCardProps) {
@@ -21,9 +21,9 @@ export default function NextAppointmentCard({ appointment }: NextAppointmentCard
                     <Stethoscope className="h-5 w-5 text-violet-600" />
 
                     <div>
-                        <p className="font-semibold">{appointment.doctor}</p>
+                        <p className="font-semibold">{appointment.doctor.name}</p>
 
-                        <p className="text-sm text-slate-500">{appointment.specialty}</p>
+                        <p className="text-sm text-slate-500">{appointment.doctor.specialty}</p>
                     </div>
                 </div>
 

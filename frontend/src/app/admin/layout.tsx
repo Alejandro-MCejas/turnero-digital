@@ -1,10 +1,15 @@
+"use client"
+
+import AdminRouteGuard from "@/components/auth/AdminRouteGuard";
 import AdminShell from "@/components/layout/AdminShell";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
-        <AdminShell>
-            {children}
-        </AdminShell>
+        <AdminRouteGuard>
+            <AdminShell>
+                {children}
+            </AdminShell>
+        </AdminRouteGuard>
     )
 }

@@ -1,12 +1,14 @@
 import Badge from "@/components/ui/data-display/Badge";
 import Button from "@/components/ui/buttons/Button";
 import { getStatusVariant } from "@/lib/utils/getStatusVariant";
-import { PatientAppointment } from "@/types/models/patient";
 import { CalendarDays, Clock3 } from "lucide-react";
 import Link from "next/link";
+import { Appointment } from "@/types/models/appointment";
+import { formatDate } from "@/lib/utils/formatDate";
+import { appointmentStatusLabel } from "@/constants/status/appointmentStatusLabel";
 
 interface AppointmentCardProps {
-    appointment: PatientAppointment;
+    appointment: Appointment;
 }
 
 export default function AppointmentCard({ appointment }: AppointmentCardProps) {
@@ -18,11 +20,11 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
                 <div>
 
                     <h3 className="font-semibold">
-                        {appointment.doctor}
+                        {appointment.doctor.name}
                     </h3>
 
                     <p className="text-sm text-slate-500">
-                        {appointment.specialty}
+                        {appointment.doctor.specialty}
                     </p>
 
                 </div>
@@ -31,7 +33,7 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
                     variant={getStatusVariant(appointment.status)}
                     className="px-3 py-1 text-sm"
                 >
-                    {appointment.status}
+                    {appointmentStatusLabel[appointment.status]}
                 </Badge>
 
             </div>
@@ -42,7 +44,7 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
 
                     <CalendarDays className="h-4 w-4" />
 
-                    <span>{appointment.date}</span>
+                    <span>{formatDate(appointment.date)}</span>
 
                 </div>
 

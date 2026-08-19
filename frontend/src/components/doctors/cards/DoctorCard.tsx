@@ -1,10 +1,7 @@
 import { Doctor } from "@/types/models/doctor"
 import Avatar from "../../ui/data-display/Avatar"
-import Badge from "../../ui/data-display/Badge"
-import { doctorStatusVariant } from "@/types/enums/doctorStatus"
 import Button from "../../ui/buttons/Button"
 import { Pencil, Trash } from "lucide-react"
-
 
 interface DoctorCardProps {
     doctor: Doctor
@@ -34,26 +31,6 @@ export default function DoctorCard({ doctor, onEdit, onDelete }: DoctorCardProps
                     </p>
 
                 </div>
-
-            </div>
-
-            <div className="mt-5 space-y-2">
-
-                <p className="truncate text-sm text-slate-500">
-                    {doctor.email}
-                </p>
-
-                <p className="text-sm text-slate-500">
-                    {doctor.phone}
-                </p>
-
-            </div>
-
-            <div className="mt-5">
-
-                <Badge variant={doctorStatusVariant[doctor.status]}>
-                    {doctor.status}
-                </Badge>
 
             </div>
 

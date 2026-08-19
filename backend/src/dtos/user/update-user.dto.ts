@@ -1,5 +1,4 @@
-import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, Length } from "class-validator";
-import { UserRole } from "../../enums/UserRole";
+import { IsDateString, IsEmail, IsNotEmpty, IsOptional, Length } from "class-validator";
 
 export class UpdateUserDto {
 
@@ -20,8 +19,4 @@ export class UpdateUserDto {
     @IsNotEmpty()
     @Length(6, 20)
     nDni?: string;
-
-    @IsOptional()
-    @IsEnum(UserRole)
-    role?: UserRole
 }

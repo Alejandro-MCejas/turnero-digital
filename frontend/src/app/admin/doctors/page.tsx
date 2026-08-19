@@ -10,11 +10,13 @@ import Button from "@/components/ui/buttons/Button";
 import Input from "@/components/ui/forms/Input";
 import Modal from "@/components/ui/overlay/Modal";
 import Table from "@/components/ui/data-display/Table";
-import { doctors } from "@/mocks/doctors";
 import { Doctor } from "@/types/models/doctor";
 import { Stethoscope } from "lucide-react";
 import { useState } from "react";
 import TableToolbar from "@/components/shared/tables/TableToolbar";
+import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { useDeleteDoctor } from "@/features/doctors/hooks/useDeleteDoctor";
+import Loader from "@/components/ui/feedback/Loader";
 
 
 export default function DoctorsPage() {
@@ -25,9 +27,31 @@ export default function DoctorsPage() {
     const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null)
     const [search, setSearch] = useState("")
 
-    const filteredDoctors = doctors.filter(doctor =>
-        doctor.name.toLowerCase().includes(search.toLowerCase()) ||
-        doctor.email.toLowerCase().includes(search.toLowerCase())
+    const { data: allDoctors = [], isLoading, isError } = useDoctors();
+
+    const { mutate: deleteDoctor, isPending: isDeleting } = useDeleteDoctor();
+
+    if (isLoading) {
+        return (
+            <Loader
+                title="Cargando médicos"
+                description="Obteniendo información..."
+            />
+        )
+    }
+
+    if (isError) {
+        return (
+            <EmptyState
+                icon={<Stethoscope className="h-14 w-14" />}
+                title="Error al cargar médicos"
+                description="No fue posible obtener la lista de médicos."
+            />
+        )
+    }
+
+    const filteredDoctors = allDoctors.filter(doctor =>
+        doctor.name.toLowerCase().includes(search.toLowerCase())
     )
 
     return (
@@ -65,7 +89,7 @@ export default function DoctorsPage() {
 
 
 
-            {doctors.length === 0 ? (
+            {allDoctors.length === 0 ? (
                 <EmptyState
                     icon={<Stethoscope className="h-14 w-14" />}
                     title="Todavía no hay médicos"
@@ -85,8 +109,8 @@ export default function DoctorsPage() {
             ) : (
                 <>
                     <div className="hidden lg:block">
-                        <Table headers={["Nombre", "Especialidad", "Email", "Telefono", "Estado", "Acciones"]}
-                            align={["left", "left", "left", "left", "center", "center"]}
+                        <Table headers={["Nombre", "Especialidad", "Acciones"]}
+                            align={["left", "left", "center"]}
                         >
                             {filteredDoctors.map(doctor => (
                                 <DoctorItem
@@ -135,9 +159,16 @@ export default function DoctorsPage() {
                         ? "Modifica la información del médico."
                         : "Completa la información para registrar un nuevo médico."
                 }
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setEditingDoctor(null)
+                    setIsModalOpen(false)
+                }}
             >
-                <DoctorForm doctor={editingDoctor} onCancel={() => setIsModalOpen(false)} />
+                <DoctorForm doctor={editingDoctor} onCancel={() => {
+                    setEditingDoctor(null)
+                    setIsModalOpen(false)
+                }}
+                />
             </Modal>
 
             <ConfirmDeleteModal
@@ -148,13 +179,19 @@ export default function DoctorsPage() {
                         : ""
                 }
                 entity="médico"
+                loading={isDeleting}
                 onCancel={() => {
                     setDoctorToDelete(null)
                     setIsDeleteModalOpen(false)
                 }}
                 onConfirm={() => {
-                    setDoctorToDelete(null)
-                    setIsDeleteModalOpen(false)
+                    if (!doctorToDelete) return
+                    deleteDoctor(doctorToDelete.id, {
+                        onSuccess: () => {
+                            setDoctorToDelete(null)
+                            setIsDeleteModalOpen(false)
+                        }
+                    })
                 }}
             />
         </div>

@@ -1,6 +1,7 @@
 import Input from "@/components/ui/forms/Input";
 import Select from "@/components/ui/forms/Select";
-
+import { appointmentStatusLabel } from "@/constants/status/appointmentStatusLabel";
+import { AppointmentStatus, appointmentStatus } from "@/types/enums/appointmentStatus";
 
 
 interface AppointmentFiltersProps {
@@ -10,6 +11,13 @@ interface AppointmentFiltersProps {
     onStatusChange: (value: string) => void
     onSearchFocus?: () => void;
 }
+
+const statusOptions: AppointmentStatus[] = [
+    appointmentStatus.CONFIRMED,
+    appointmentStatus.PENDING,
+    appointmentStatus.CANCELLED,
+    appointmentStatus.COMPLETED
+]
 
 export default function AppointmentFilters({ search, status, onSearchChange, onStatusChange, onSearchFocus }: AppointmentFiltersProps) {
     return (
@@ -33,17 +41,12 @@ export default function AppointmentFilters({ search, status, onSearchChange, onS
                     Todos los estados
                 </option>
 
-                <option value="Confirmado">
-                    Confirmado
-                </option>
+                {statusOptions.map(status => (
+                    <option key={status} value={status}>
+                        {appointmentStatusLabel[status]}
+                    </option>
+                ))}
 
-                <option value="Pendiente">
-                    Pendiente
-                </option>
-
-                <option value="Cancelado">
-                    Cancelado
-                </option>
 
             </Select>
 

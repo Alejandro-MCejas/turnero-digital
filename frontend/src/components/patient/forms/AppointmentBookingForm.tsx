@@ -4,48 +4,108 @@ import Button from "@/components/ui/buttons/Button";
 import TimeSlotButton from "../ui/TimeSlotButton";
 import Input from "@/components/ui/forms/Input";
 import Select from "@/components/ui/forms/Select";
-import { specialties } from "@/mocks/specialties";
 import { useState } from "react";
-import { doctors } from "@/mocks/doctors";
-import { schedules } from "@/mocks/schedules";
-import { generateTimeSlots } from "@/lib/utils/generateTimeSlots";
-import { getDayNameFromDate } from "@/lib/utils/getDayNameFromDate";
-import { CalendarSearch } from "lucide-react";
-
+import { CalendarSearch, Clock3 } from "lucide-react";
+import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { useCreateAppointment } from "@/features/appointments/hooks/useCreateAppointment";
+import Loader from "@/components/ui/feedback/Loader";
+import EmptyState from "@/components/shared/empty-state/EmptyState";
+import { useDoctorAvailability } from "@/features/doctors/hooks/useDoctorAvailability";
+import { getLocaleDateString } from "@/lib/utils/getLocalDateString";
 
 
 export default function AppointmentBookingForm() {
 
-    const [selectedspecialty, setSelectedspecialty] = useState("");
+    const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const [selectedDoctor, setSelectedDoctor] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedTime, setSelectedTime] = useState("");
 
+    const { data: doctors = [], isLoading: isLoadingDoctors, isError: isDoctorsError } = useDoctors()
+
+    const { data: availableTimes = [], isLoading: isLoadingAvailability, isError: isAvailabilityError } = useDoctorAvailability(
+        selectedDoctor,
+        selectedDate
+    )
+
+    const createAppointmentMutation = useCreateAppointment()
+
+    const specialties = Array.from(
+        new Set(doctors.map(doctor => doctor.specialty))
+    );
+
     const availableDoctors = doctors.filter(
-        doctor => doctor.specialty === selectedspecialty && doctor.status === "Activo"
+        doctor => doctor.specialty === selectedSpecialty
     );
 
-    const selectedDay = selectedDate ? getDayNameFromDate(selectedDate) : "";
+    const handleSpecialtyChange = (specialty: string) => {
+        setSelectedSpecialty(specialty);
+        setSelectedDoctor("");
+        setSelectedDate("");
+        setSelectedTime("");
+    };
 
-    const doctorSchedules = schedules.filter(
-        schedule =>
-            schedule.doctorId === Number(selectedDoctor) &&
-            schedule.day === selectedDay
-    );
+    const handleDoctorChange = (doctorId: string) => {
+        setSelectedDoctor(doctorId);
+        setSelectedDate("");
+        setSelectedTime("");
+    };
 
-    const availableTimes = doctorSchedules.flatMap(schedule =>
-        generateTimeSlots(
-            schedule.start,
-            schedule.end,
-            schedule.appointmentDuration
-        )
-    );
+    const handleDateChange = (date: string) => {
+        setSelectedDate(date);
+        setSelectedTime("");
+    };
+
+    const handleSubmit = () => {
+
+        if (
+            !selectedDoctor ||
+            !selectedDate ||
+            !selectedTime
+        ) {
+            return;
+        }
+
+        createAppointmentMutation.mutate(
+            {
+                doctorId: selectedDoctor,
+                date: selectedDate,
+                time: selectedTime
+            },
+            {
+                onSuccess: () => {
+                    setSelectedSpecialty("");
+                    setSelectedDoctor("");
+                    setSelectedDate("");
+                    setSelectedTime("");
+                }
+            }
+        );
+    };
+
+    if (isLoadingDoctors) {
+        return (
+            <Loader
+                title="Cargando profesionales"
+                description="Obteniendo los profesionales disponibles..."
+            />
+        );
+    }
+
+    if (isDoctorsError) {
+        return (
+            <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
+                <p className="text-sm text-red-600">
+                    No se pudieron cargar los profesionales.
+                </p>
+            </section>
+        );
+    }
+
 
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
-
             <div className="space-y-6 sm:space-y-8">
-
                 <div>
 
                     <label className="mb-2 block text-base font-medium text-slate-800">
@@ -53,13 +113,8 @@ export default function AppointmentBookingForm() {
                     </label>
 
                     <Select
-                        value={selectedspecialty}
-                        onChange={e => {
-                            setSelectedspecialty(e.target.value)
-                            setSelectedDoctor("");
-                            setSelectedDate("");
-                            setSelectedTime("");
-                        }}
+                        value={selectedSpecialty}
+                        onChange={e => handleSpecialtyChange(e.target.value)}
                         className="w-full"
                     >
 
@@ -68,8 +123,8 @@ export default function AppointmentBookingForm() {
                         </option>
 
                         {specialties.map(specialty => (
-                            <option key={specialty.id} value={specialty.name}>
-                                {specialty.name}
+                            <option key={specialty} value={specialty}>
+                                {specialty}
                             </option>
                         ))}
 
@@ -85,12 +140,8 @@ export default function AppointmentBookingForm() {
 
                     <Select
                         value={selectedDoctor}
-                        onChange={e => {
-                            setSelectedDoctor(e.target.value);
-                            setSelectedDate("");
-                            setSelectedTime("");
-                        }}
-                        disabled={!selectedspecialty}
+                        onChange={e => handleDoctorChange(e.target.value)}
+                        disabled={!selectedSpecialty}
                         className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                     >
 
@@ -117,11 +168,9 @@ export default function AppointmentBookingForm() {
                     <Input
                         type="date"
                         value={selectedDate}
-                        onChange={e => {
-                            setSelectedDate(e.target.value);
-                            setSelectedTime("");
-                        }}
+                        onChange={e => handleDateChange(e.target.value)}
                         disabled={!selectedDoctor}
+                        min={getLocaleDateString()}
                         className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                     />
 
@@ -129,15 +178,46 @@ export default function AppointmentBookingForm() {
 
                 <div>
 
-                    <h3 className="mb-3 text-sm font-medium">
-
-                        Horarios disponibles
-
-                    </h3>
+                    <h3 className="mb-3 text-sm font-medium">Horarios disponibles</h3>
 
                     <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+                        {!selectedDoctor || !selectedDate ? (
 
-                        {availableTimes.length > 0 ? (
+                            <div className="col-span-3 w-full">
+
+                                <EmptyState
+                                    size="sm"
+                                    icon={
+                                        <CalendarSearch className="h-10 w-10" />
+                                    }
+                                    title="Seleccioná una fecha"
+                                    description="Elegí un profesional y una fecha para consultar los horarios disponibles."
+                                />
+
+                            </div>
+
+                        ) : isLoadingAvailability ? (
+
+                            <div className="col-span-3 w-full">
+
+                                <Loader
+                                    title="Cargando horarios"
+                                    description="Consultando los horarios disponibles..."
+                                />
+
+                            </div>
+
+                        ) : isAvailabilityError ? (
+
+                            <div className="col-span-3 w-full rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+
+                                <p className="text-sm text-red-600">
+                                    No se pudieron cargar los horarios del profesional.
+                                </p>
+
+                            </div>
+
+                        ) : availableTimes.length > 0 ? (
 
                             availableTimes.map(time => (
 
@@ -145,41 +225,50 @@ export default function AppointmentBookingForm() {
                                     key={time}
                                     time={time}
                                     selected={selectedTime === time}
-                                    disabled={!selectedDate}
-                                    onClick={() => setSelectedTime(time)}
+                                    onClick={() =>
+                                        setSelectedTime(time)
+                                    }
                                 />
 
                             ))
 
                         ) : (
 
-                            <div className="col-span-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                            <div className="col-span-3 w-full">
 
-                                <CalendarSearch className="mx-auto mb-3 h-8 w-8 text-slate-400" />
-
-                                <p className="mx-auto max-w-xs text-sm leading-6 text-slate-500">
-                                    Seleccioná un profesional y una fecha para consultar los horarios disponibles.
-                                </p>
+                                <EmptyState
+                                    size="sm"
+                                    icon={
+                                        <Clock3 className="h-10 w-10" />
+                                    }
+                                    title="No hay horarios disponibles"
+                                    description="El profesional no tiene horarios disponibles para la fecha seleccionada."
+                                />
 
                             </div>
 
                         )}
-
                     </div>
 
                 </div>
 
                 <div className="pt-2 flex sm:justify-end">
                     <Button
+                        type="button"
+                        onClick={handleSubmit}
                         className="mx-auto w-full max-w-xs justify-center sm:mx-0 sm:w-auto"
                         disabled={
-                            !selectedspecialty ||
+                            !selectedSpecialty ||
                             !selectedDoctor ||
                             !selectedDate ||
-                            !selectedTime
+                            !selectedTime ||
+                            createAppointmentMutation.isPending
                         }
                     >
-                        Reservar turno
+                        {createAppointmentMutation.isPending
+                            ? "Reservando..."
+                            : "Reservar turno"
+                        }
                     </Button>
                 </div>
 

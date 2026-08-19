@@ -10,6 +10,7 @@ interface ConfirmDeleteModalProps {
     confirmText?: string
     message: string
     entity: string
+    loading?: boolean
     onCancel: () => void
     onConfirm: () => void
 }
@@ -21,6 +22,7 @@ export default function ConfirmDeleteModal({
     confirmText = "Eliminar",
     message,
     entity,
+    loading = false,
     onCancel,
     onConfirm
 }: ConfirmDeleteModalProps) {
@@ -47,6 +49,7 @@ export default function ConfirmDeleteModal({
                         variant="secondary"
                         type="button"
                         onClick={onCancel}
+                        disabled={loading}
                         className="justify-center sm:w-auto"
                     >
                         Cancelar
@@ -56,9 +59,10 @@ export default function ConfirmDeleteModal({
                         variant="danger"
                         type="button"
                         onClick={onConfirm}
+                        disabled={loading}
                         className="justify-center sm:w-auto"
                     >
-                        {confirmText}
+                        {loading ? "Eliminando..." : confirmText}
                     </Button>
                 </div>
             </div>

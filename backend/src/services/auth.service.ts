@@ -13,6 +13,7 @@ import { ResetPasswordDto } from "../dtos/auth/reset-password.dto";
 import { resetPasswordTemplate } from "../templates/email/resetPasswordTemplate";
 import { sendEmail } from "../utils/sendEmail";
 import { welcomeTemplate } from "../templates/email/welcomeTemplate";
+import { ChangePasswordDto } from "../dtos/auth/change-password.dto";
 
 const userRepository = AppDataSource.getRepository(User)
 const credentialRepository = AppDataSource.getRepository(Credential)
@@ -169,4 +170,22 @@ export const resetPassword = async (dto: ResetPasswordDto) => {
     credential.resetTokenExpires = null
 
     await credentialRepository.save(credential)
+}
+
+export const changePassword = async (userId: string, dto: ChangePasswordDto): Promise<void> => {
+    if (dto.newPassword !== dto.confirmPassword) throw new AppError("Password do not match", 400)
+
+    const user = await userRepository.findOne({ where: { id: userId }, relations: ["credential"] })
+
+    if (!user) throw new AppError("User not found", 404)
+
+    const isValid = await comparePassword(dto.currentPassword, user.credential.password)
+
+    if (!isValid) throw new AppError("Current password is incorrect", 400)
+
+    const hashedPassword = await hashPassword(dto.newPassword)
+
+    user.credential.password = hashedPassword
+
+    await credentialRepository.save(user.credential)
 }

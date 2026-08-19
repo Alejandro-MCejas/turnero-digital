@@ -1,18 +1,17 @@
-import { PatientAppointment } from "@/types/models/patient";
+import { AppointmentStatus, appointmentStatus } from "@/types/enums/appointmentStatus";
 
-
-export function getStatusVariant(status: PatientAppointment["status"]) {
+export function getStatusVariant(status: AppointmentStatus) {
     switch (status) {
-        case "Confirmado":
+        case appointmentStatus.CONFIRMED:
             return "success"
 
-        case "Pendiente":
+        case appointmentStatus.PENDING:
             return "warning"
 
-        case "Cancelado":
+        case appointmentStatus.CANCELLED:
             return "danger"
 
-        case "Completado":
+        case appointmentStatus.COMPLETED:
             return "info"
     }
 }

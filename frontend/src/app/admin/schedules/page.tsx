@@ -9,19 +9,29 @@ import EmptyState from "@/components/shared/empty-state/EmptyState";
 import PageHeader from "@/components/shared/headers/PageHeader";
 import Button from "@/components/ui/buttons/Button";
 import Modal from "@/components/ui/overlay/Modal";
-import { schedules } from "@/mocks/schedules";
 import { Schedule } from "@/types/models/schedule";
 import { Clock3 } from "lucide-react";
 import { useState } from "react";
+import { useDoctors } from "@/features/doctors/hooks/useDoctors";
+import { useDoctorSchedules } from "@/features/schedules/hooks/useDoctorSchedules";
+import { useDeleteDoctorSchedule } from "@/features/schedules/hooks/useDeleteDoctorSchedule";
+import Loader from "@/components/ui/feedback/Loader";
 
 
 export default function SchedulesPage() {
 
-    const [selectedDoctor, setSelectedDoctor] = useState(1)
+    const [selectedDoctor, setSelectedDoctor] = useState("")
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null)
+
+    const { data: doctors = [], isLoading: isLoadingDoctors, isError: isErrorDoctors } = useDoctors()
+
+    const { data: doctorSchedules = [], isLoading: isLoadingSchedules, isError: isErrorSchedules } =
+        useDoctorSchedules(selectedDoctor)
+
+    const { mutate: deleteDoctorSchedule, isPending: isDeleting } = useDeleteDoctorSchedule()
 
     const handleEditSchedule = (schedule: Schedule) => {
         setEditingSchedule(schedule)
@@ -33,13 +43,38 @@ export default function SchedulesPage() {
         setIsDeleteModalOpen(true)
     }
 
-    const doctorSchedules = schedules.filter(schedule => schedule.doctorId === selectedDoctor)
+    const handleCloseModal = () => {
+        setEditingSchedule(null)
+        setIsModalOpen(false)
+    }
+
+    const handleCloseDeleteModal = () => {
+        setScheduleToDelete(null)
+        setIsDeleteModalOpen(false)
+    }
+
+    if (isLoadingDoctors) {
+        return (
+            <Loader title="Cargando médicos" description="Obteniendo médicos disponibles..." />
+        )
+    }
+
+    if (isErrorDoctors) {
+        return (
+            <EmptyState
+                icon={<Clock3 className="h-14 w-14" />}
+                title="Error al cargar médicos"
+                description="No fue posible obtener los médicos del sistema."
+            />
+        )
+    }
 
     return (
         <div className="space-y-6">
             <PageHeader title="Horarios" subtitle="Gestiona la disponibilidad de los médicos" />
 
             <ScheduleFilters
+                doctors={doctors}
                 selectedDoctor={selectedDoctor}
                 onDoctorChange={setSelectedDoctor}
                 onNewSchedule={() => {
@@ -48,19 +83,20 @@ export default function SchedulesPage() {
                 }}
             />
 
-            {schedules.length === 0 ? (
+            {!selectedDoctor ? (
                 <EmptyState
                     icon={<Clock3 className="h-14 w-14" />}
-                    title="Todavía no hay horarios"
-                    description="Comenzá agregando el primer horario para un médico"
-                    action={
-                        <Button onClick={() => {
-                            setEditingSchedule(null)
-                            setIsModalOpen(true)
-                        }}>
-                            Nuevo horario
-                        </Button>
-                    }
+                    title="Seleccioná un médico"
+                    description="Seleccioná un médico para consultar y gestionar sus horarios."
+                />
+            ) : isLoadingSchedules ? (
+                <Loader title="Cargando horarios" description="Obteniendo los horarios del médico..."
+                />
+            ) : isErrorSchedules ? (
+                <EmptyState
+                    icon={<Clock3 className="h-14 w-14" />}
+                    title="Error al cargar horarios"
+                    description="No fue posible obtener los horarios del médico."
                 />
             ) : doctorSchedules.length === 0 ? (
                 <EmptyState
@@ -80,7 +116,7 @@ export default function SchedulesPage() {
                 <>
                     <div className="hidden lg:block">
                         <ScheduleGrid
-                            doctorId={selectedDoctor}
+                            schedules={doctorSchedules}
                             onEditSchedule={handleEditSchedule}
                             onDeleteSchedule={handleDeleteSchedule}
                         />
@@ -88,7 +124,7 @@ export default function SchedulesPage() {
 
                     <div className="lg:hidden">
                         <ScheduleMobile
-                            doctorId={selectedDoctor}
+                            schedules={doctorSchedules}
                             onEditSchedule={handleEditSchedule}
                             onDeleteSchedule={handleDeleteSchedule}
                         />
@@ -105,26 +141,27 @@ export default function SchedulesPage() {
                         ? "Modifica la información del horario."
                         : "Agrega un nuevo horario para un médico."
                 }
-                onClose={() => setIsModalOpen(false)}
+                onClose={handleCloseModal}
             >
-                <ScheduleForm schedule={editingSchedule} onCancel={() => setIsModalOpen(false)} />
+                <ScheduleForm schedule={editingSchedule} doctorId={selectedDoctor} onCancel={handleCloseModal} />
             </Modal>
 
             <ConfirmDeleteModal
                 open={isDeleteModalOpen}
+                loading={isDeleting}
                 message={
                     scheduleToDelete
-                        ? `El horario del ${scheduleToDelete.day} (${scheduleToDelete.start} - ${scheduleToDelete.end}) será eliminado permanentemente. \nEsta acción no se puede deshacer.`
+                        ? `El horario del ${scheduleToDelete.dayOfWeek} (${scheduleToDelete.startTime} - ${scheduleToDelete.endTime}) será eliminado permanentemente. \nEsta acción no se puede deshacer.`
                         : ""
                 }
                 entity="horario"
-                onCancel={() => {
-                    setScheduleToDelete(null)
-                    setIsDeleteModalOpen(false)
-                }}
+                onCancel={handleCloseDeleteModal}
                 onConfirm={() => {
-                    setScheduleToDelete(null)
-                    setIsDeleteModalOpen(false)
+                    if (!scheduleToDelete) return
+
+                    deleteDoctorSchedule({ id: scheduleToDelete.id, doctorId: selectedDoctor }, {
+                        onSuccess: handleCloseDeleteModal
+                    })
                 }}
             />
 

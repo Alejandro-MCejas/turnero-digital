@@ -1,8 +1,8 @@
 export const appointmentStatus = {
-    Confirmado: "Confirmado",
-    Pendiente: "Pendiente",
-    Cancelado: "Cancelado",
-    Completado: "Completado",
+    PENDING: "pending",
+    CONFIRMED: "confirmed",
+    CANCELLED: "cancelled",
+    COMPLETED: "completed",
 } as const;
 
 export type AppointmentStatus = (typeof appointmentStatus)[keyof typeof appointmentStatus];

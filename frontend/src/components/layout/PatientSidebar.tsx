@@ -6,6 +6,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Avatar from "../ui/data-display/Avatar";
 import Button from "../ui/buttons/Button";
+import { useLogout } from "@/features/auth/hooks/useLogout";
+import { useCurrentUser } from "@/features/users/hooks/useCurrentUser";
+import { userRoleLabel } from "@/constants/user/userRoleLabel";
+import Skeleton from "../ui/feedback/Skeleton";
 
 interface PatientSidebarProps {
     onNavigate?: () => void
@@ -15,6 +19,10 @@ interface PatientSidebarProps {
 export default function PatientSidebar({ onNavigate }: PatientSidebarProps) {
 
     const pathname = usePathname()
+
+    const logoutMutation = useLogout();
+
+    const { data: user, isLoading } = useCurrentUser()
 
     return (
         <aside className="flex h-full w-full flex-col border-r border-slate-200 bg-white">
@@ -68,30 +76,58 @@ export default function PatientSidebar({ onNavigate }: PatientSidebarProps) {
 
 
             <footer className="border-t border-slate-200 p-4">
-                <div className="flex items-center gap-3">
+                <Link
+                    href="/patient/profile"
+                    onClick={onNavigate}
+                    className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-slate-100"
+                >
 
-                    <Avatar
-                        name="Alejandro Cejas"
-                        size="md"
-                    />
+                    {isLoading ? (
 
-                    <div>
-                        <p className="font-medium text-slate-900">
-                            Alejandro
-                        </p>
+                        <>
+                            <Skeleton className="h-10 w-10 shrink-0 rounded-full bg-slate-200" />
 
-                        <p className="text-sm text-slate-500">
-                            Paciente
-                        </p>
-                    </div>
+                            <div className="min-w-0 space-y-2">
 
-                </div>
+                                <Skeleton className="h-4 w-24 bg-slate-200" />
+
+                                <Skeleton className="h-3 w-16 bg-slate-200" />
+
+                            </div>
+                        </>
+
+                    ) : user ? (
+
+                        <>
+                            <Avatar
+                                name={user.name}
+                                size="md"
+                            />
+
+                            <div className="min-w-0">
+
+                                <p className="truncate font-medium text-slate-900">
+                                    {user.name}
+                                </p>
+
+                                <p className="truncate text-sm text-slate-500">
+                                    {userRoleLabel[user.role]}
+                                </p>
+
+                            </div>
+                        </>
+
+                    ) : null}
+
+                </Link>
 
                 <Button
                     variant="secondary"
                     className="mt-4 w-full"
+                    onClick={() => logoutMutation.mutate()}
                 >
                     <LogOut className="h-5 w-5" />
+
                     Cerrar sesión
                 </Button>
 

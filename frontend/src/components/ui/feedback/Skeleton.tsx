@@ -6,6 +6,6 @@ interface SpinnerProps {
 
 export default function Skeleton({ className = "" }: SpinnerProps) {
     return (
-        <div className={`animate-pulse rounded-md bg-violet-100/60 ${className}`} />
+        <div className={`animate-pulse rounded-md bg-slate-200 ${className}`} />
     )
 }

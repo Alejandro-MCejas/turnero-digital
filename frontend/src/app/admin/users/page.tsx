@@ -10,26 +10,49 @@ import Table from "@/components/ui/data-display/Table";
 import UserCard from "@/components/users/UserCard";
 import UserForm from "@/components/users/UserForm";
 import UserItem from "@/components/users/UserItem";
-import { users } from "@/mocks/users";
 import { User } from "@/types/models/user";
 import { Users } from "lucide-react";
 import { useState } from "react";
 import TableToolbar from "@/components/shared/tables/TableToolbar";
+import { useUsers } from "@/features/users/hooks/useUsers";
+import Loader from "@/components/ui/feedback/Loader";
+import { useDeleteUser } from "@/features/users/hooks/useDeleteUser";
+import ChangeUserRoleModal from "@/components/users/ChangeUserRoleModal";
 
 
 export default function UsersPage() {
 
-    const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
     const [search, setSearch] = useState("")
+    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false)
+    const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null)
 
-    const filteredUsers = users.filter(user =>
+    const { data: allUsers = [], isLoading, isError } = useUsers()
+
+    const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser()
+
+    if (isLoading) {
+        return (
+            <Loader title="Cargando usuarios" description="Obteniendo información..." />
+        )
+    }
+
+    if (isError) {
+        return (
+            <EmptyState
+                icon={<Users className="h-14 w-14" />}
+                title="Error al cargar usuarios"
+                description="No fue posible obtener la lista de usuarios."
+            />
+        )
+    }
+
+    const filteredUsers = allUsers.filter(user =>
         user.name.toLowerCase().includes(search.toLowerCase()) ||
         user.email.toLowerCase().includes(search.toLowerCase())
     )
-
 
     return (
         <div className="space-y-6">
@@ -55,26 +78,14 @@ export default function UsersPage() {
                         </Button>
                     )}
                 </div>
-                <Button onClick={() => {
-                    setEditingUser(null)
-                    setIsModalOpen(true)
-                }}
-                >
-                    Nuevo usuario
-                </Button>
             </TableToolbar>
 
 
-            {users.length === 0 ? (
+            {allUsers.length === 0 ? (
                 <EmptyState
                     icon={<Users className="h-14 w-14" />}
                     title="Todavía no hay usuarios"
                     description="Comenzá agregando el primer usuario al sistema."
-                    action={
-                        <Button onClick={() => setIsModalOpen(true)}>
-                            Nuevo usuario
-                        </Button>
-                    }
                 />
             ) : filteredUsers.length === 0 ? (
                 <EmptyState
@@ -92,13 +103,14 @@ export default function UsersPage() {
                                 <UserItem
                                     key={user.id}
                                     user={user}
-                                    onEdit={user => {
-                                        setEditingUser(user)
-                                        setIsModalOpen(true)
-                                    }}
+                                    onEdit={user => setEditingUser(user)}
                                     onDelete={user => {
                                         setUserToDelete(user)
                                         setIsDeleteModalOpen(true)
+                                    }}
+                                    onChangeRole={(user) => {
+                                        setUserToChangeRole(user)
+                                        setIsRoleModalOpen(true)
                                     }}
                                 />
                             ))}
@@ -110,13 +122,14 @@ export default function UsersPage() {
                             <UserCard
                                 key={user.id}
                                 user={user}
-                                onEdit={user => {
-                                    setEditingUser(user)
-                                    setIsModalOpen(true)
-                                }}
+                                onEdit={user => setEditingUser(user)}
                                 onDelete={user => {
                                     setUserToDelete(user)
                                     setIsDeleteModalOpen(true)
+                                }}
+                                onChangeRole={(user) => {
+                                    setUserToChangeRole(user)
+                                    setIsRoleModalOpen(true)
                                 }}
                             />
                         ))}
@@ -126,21 +139,17 @@ export default function UsersPage() {
             }
 
             <Modal
-                open={isModalOpen}
-                title={editingUser ? "Editar usuario" : "Nuevo usuario"}
-                subtitle={
-                    editingUser
-                        ? "Modifica la información del usuario."
-                        : "Completa la información para registrar un nuevo usuario."
-
-                }
-                onClose={() => setIsModalOpen(false)}
+                open={!!editingUser}
+                title={"Editar usuario"}
+                subtitle="Modifica la información del usuario."
+                onClose={() => setEditingUser(null)}
             >
-                <UserForm user={editingUser} onCancel={() => setIsModalOpen(false)} />
+                <UserForm user={editingUser} onCancel={() => setEditingUser(null)} />
             </Modal>
 
             <ConfirmDeleteModal
                 open={isDeleteModalOpen}
+                loading={isDeleting}
                 message={
                     userToDelete
                         ? `${userToDelete.name} será eliminado permanentemente.\nEsta acción no se puede deshacer.`
@@ -152,8 +161,23 @@ export default function UsersPage() {
                     setIsDeleteModalOpen(false)
                 }}
                 onConfirm={() => {
-                    setUserToDelete(null)
-                    setIsDeleteModalOpen(false)
+                    if (!userToDelete) return
+
+                    deleteUser(userToDelete.id, {
+                        onSuccess: () => {
+                            setUserToDelete(null)
+                            setIsDeleteModalOpen(false)
+                        }
+                    })
+                }}
+            />
+
+            <ChangeUserRoleModal
+                open={isRoleModalOpen}
+                user={userToChangeRole}
+                onClose={() => {
+                    setUserToChangeRole(null)
+                    setIsRoleModalOpen(false)
                 }}
             />
 

@@ -1,4 +1,4 @@
-const baseClasses = "inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors";
+const baseClasses = "inline-flex items-center justify-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors";
 
 const variants = {
     primary: "border border-slate-900 bg-slate-900 text-white hover:bg-slate-800",
@@ -18,7 +18,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export default function Button({ children, variant = "primary", className = "", ...props }: ButtonProps) {
 
     const disabledClasses = props.disabled
-        ? "cursor-not-allowed opacity-50 hover:bg-inherit hover:text-inherit"
+        ? "cursor-not-allowed opacity-50"
         : "cursor-pointer"
     return (
         <button

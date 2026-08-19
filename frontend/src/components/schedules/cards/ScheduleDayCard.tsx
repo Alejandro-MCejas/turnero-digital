@@ -1,22 +1,32 @@
-import { schedules } from "@/mocks/schedules"
 import { Schedule } from "@/types/models/schedule"
 import Badge from "../../ui/data-display/Badge"
 import ScheduleCard from "./ScheduleCard"
 import Button from "../../ui/buttons/Button"
 import { Clock, Pencil, Trash } from "lucide-react"
+import { DoctorScheduleDay } from "@/types/enums/doctorScheduleDay"
 
 
 
 interface ScheduleDayCardProps {
     day: string
-    doctorId: number
+    schedules: Schedule[]
     onEditSchedule: (schedule: Schedule) => void
     onDeleteSchedule: (schedule: Schedule) => void
 }
 
-export default function ScheduleDayCard({ day, doctorId, onEditSchedule, onDeleteSchedule }: ScheduleDayCardProps) {
-    const schedulesOfDay = schedules.filter(schedule => schedule.day === day && schedule.doctorId === doctorId)
-        .sort((a, b) => a.start.localeCompare(b.start))
+const dayMap: Record<string, DoctorScheduleDay> = {
+    "Lunes": DoctorScheduleDay.MONDAY,
+    "Martes": DoctorScheduleDay.TUESDAY,
+    "Miércoles": DoctorScheduleDay.WEDNESDAY,
+    "Jueves": DoctorScheduleDay.THURSDAY,
+    "Viernes": DoctorScheduleDay.FRIDAY,
+    "Sábado": DoctorScheduleDay.SATURDAY,
+    "Domingo": DoctorScheduleDay.SUNDAY
+};
+
+export default function ScheduleDayCard({ day, schedules, onEditSchedule, onDeleteSchedule }: ScheduleDayCardProps) {
+    const schedulesOfDay = schedules.filter(schedule => schedule.dayOfWeek === dayMap[day])
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
     return (
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -42,9 +52,9 @@ export default function ScheduleDayCard({ day, doctorId, onEditSchedule, onDelet
                     {schedulesOfDay.map(schedule => (
 
                         <ScheduleCard
-                            key={`${schedule.day}-${schedule.start}`}
-                            start={schedule.start}
-                            end={schedule.end}
+                            key={schedule.id}
+                            start={schedule.startTime}
+                            end={schedule.endTime}
                             actionsClassName="flex flex-col gap-2 sm:grid sm:grid-cols-2"
                         >
 

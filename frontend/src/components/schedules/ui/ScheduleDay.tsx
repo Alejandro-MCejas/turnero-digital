@@ -1,21 +1,30 @@
-import { schedules } from "@/mocks/schedules";
 import ScheduleCard from "../cards/ScheduleCard";
 import Button from "../../ui/buttons/Button";
 import { Clock, Pencil, Trash } from "lucide-react";
 import { Schedule } from "@/types/models/schedule";
+import { DoctorScheduleDay } from "@/types/enums/doctorScheduleDay";
 
 interface ScheduleDayProps {
     day: string;
-    doctorId: number;
+    schedules: Schedule[]
     onEditSchedule: (schedule: Schedule) => void
     onDeleteSchedule: (schedule: Schedule) => void
 }
 
-export default function ScheduleDay({ day, doctorId, onEditSchedule, onDeleteSchedule }: ScheduleDayProps) {
+const dayMap: Record<string, DoctorScheduleDay> = {
+    "Lunes": DoctorScheduleDay.MONDAY,
+    "Martes": DoctorScheduleDay.TUESDAY,
+    "Miércoles": DoctorScheduleDay.WEDNESDAY,
+    "Jueves": DoctorScheduleDay.THURSDAY,
+    "Viernes": DoctorScheduleDay.FRIDAY,
+    "Sábado": DoctorScheduleDay.SATURDAY,
+    "Domingo": DoctorScheduleDay.SUNDAY
+}
 
-    const schedulesOfDay = schedules
-        .filter(schedule => schedule.day === day && schedule.doctorId === doctorId)
-        .sort((a, b) => a.start.localeCompare(b.start));
+export default function ScheduleDay({ day, schedules, onEditSchedule, onDeleteSchedule }: ScheduleDayProps) {
+
+    const schedulesOfDay = schedules.filter(schedule => schedule.dayOfWeek === dayMap[day])
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
     return (
         <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -25,9 +34,9 @@ export default function ScheduleDay({ day, doctorId, onEditSchedule, onDeleteSch
                 {schedulesOfDay.length > 0 ? (
                     schedulesOfDay.map(schedule => (
                         <ScheduleCard
-                            key={`${schedule.day}-${schedule.start}`}
-                            start={schedule.start}
-                            end={schedule.end}
+                            key={schedule.id}
+                            start={schedule.startTime}
+                            end={schedule.endTime}
                             actionsClassName="flex justify-center gap-2"
                         >
                             <Button variant="secondary" onClick={() => onEditSchedule(schedule)}

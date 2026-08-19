@@ -2,9 +2,10 @@
 
 import AuthContainer from "@/components/auth/AuthContainer"
 import AuthLeftSide from "@/components/auth/AuthLeftSide"
-import Button from "@/components/ui/Button"
-import Card from "@/components/ui/Card"
-import Input from "@/components/ui/Input"
+import Button from "@/components/ui/buttons/Button"
+import Card from "@/components/ui/cards/Card"
+import Input from "@/components/ui/forms/Input"
+import { useLogin } from "@/features/auth/hooks/useLogin"
 import { LoginSchema } from "@/lib/validations/authSchema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeOff, HeartPulse } from "lucide-react"
@@ -24,7 +25,11 @@ export default function LoginPage() {
       mode: "onChange"
     })
 
-  const onSubmit = (data: LoginFormData) => console.log(data)
+  const loginMutation = useLogin()
+
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation.mutate(data)
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-100">
@@ -62,7 +67,7 @@ export default function LoginPage() {
                 type="email"
                 {...register("email")}
                 placeholder="email@gmail.com"
-                className="text-slate-800 placeholder:text-slate-400"
+                className="text-slate-800 placeholder:text-slate-400 w-full"
               />
               {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
@@ -75,7 +80,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
                   placeholder="********"
-                  className="pr-10 text-slate-800"
+                  className="pr-10 text-slate-800 w-full"
                 />
                 <button
                   type="button"
@@ -87,16 +92,18 @@ export default function LoginPage() {
               </div>
 
               {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+
+              {loginMutation.isError && (
+                <p className="text-xs text-red-500">
+                  Email o contraseña incorrectos
+                </p>
+              )}
             </div>
 
-            <div className="flex justify-between text-sm">
-              <label className="flex items-center gap-2 text-slate-600">
-                <input type="checkbox" className="accent-indigo-600" />
-                Recordarme
-              </label>
-              <span className="text-indigo-600 hover:underline cursor-pointer">
+            <div className=" text-sm">
+              <Link href="/forgot-password" className="text-indigo-600 hover:underline">
                 ¿Olvidaste tu contraseña?
-              </span>
+              </Link>
             </div>
 
             <Button

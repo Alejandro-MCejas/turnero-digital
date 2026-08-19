@@ -2,16 +2,17 @@ import { User } from "@/types/models/user"
 import Avatar from "../ui/data-display/Avatar"
 import Badge from "../ui/data-display/Badge"
 import Button from "../ui/buttons/Button"
-import { Pencil, Trash } from "lucide-react"
+import { Pencil, ShieldCheck, Trash } from "lucide-react"
 
 
 interface UserCardProps {
     user: User
     onEdit: (user: User) => void
     onDelete: (user: User) => void
+    onChangeRole: (user: User) => void
 }
 
-export default function UserCard({ user, onEdit, onDelete }: UserCardProps) {
+export default function UserCard({ user, onEdit, onDelete, onChangeRole }: UserCardProps) {
     return (
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
@@ -46,6 +47,15 @@ export default function UserCard({ user, onEdit, onDelete }: UserCardProps) {
                 >
                     <Pencil className="h-4 w-4" />
                     Editar
+                </Button>
+
+                <Button
+                    variant="primary"
+                    className="flex-1 justify-center"
+                    onClick={() => onChangeRole(user)}
+                >
+                    <ShieldCheck className="h-4 w-4" />
+                    Rol
                 </Button>
 
                 <Button

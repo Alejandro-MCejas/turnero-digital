@@ -3,7 +3,10 @@ import Button from "../ui/buttons/Button"
 import FormActions from "../ui/forms/FormActions"
 import FormField from "../ui/forms/FormField"
 import Input from "../ui/forms/Input"
-import Select from "../ui/forms/Select"
+import { useUpdateUser } from "@/features/users/hooks/useUpdateUser"
+import { useForm } from "react-hook-form"
+import { UpdateUserDto } from "@/features/users/dto/updateUser.dto"
+import { useEffect } from "react"
 
 
 interface UserFormProps {
@@ -12,47 +15,70 @@ interface UserFormProps {
 }
 
 export default function UserForm({ user, onCancel }: UserFormProps) {
+
+    const { register, handleSubmit, reset, formState: { isDirty } } = useForm<UpdateUserDto>()
+
+    useEffect(() => {
+        reset({
+            name: user?.name ?? "",
+            email: user?.email ?? "",
+            nDni: user?.nDni ?? "",
+            birthDate: user?.birthDate
+                ? user.birthDate.split("T")[0]
+                : "",
+        })
+    }, [user, reset])
+
+    const { mutate: updateUser, isPending } = useUpdateUser()
+
+    const onSubmit = (data: UpdateUserDto) => {
+        if (!user) return
+
+        updateUser({ id: user.id, dto: data }, {
+            onSuccess: () => {
+                onCancel()
+            }
+        })
+
+    }
+
+
     return (
-        <form className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <FormField label="Nombre">
-                <Input defaultValue={user?.name} placeholder="Juan Pérez" />
+                <Input {...register("name")} placeholder="Juan Pérez" />
             </FormField>
 
             <FormField label="Email">
-                <Input type="email" defaultValue={user?.email} placeholder="juan.perez@email.com" />
+                <Input type="email" {...register("email")} placeholder="juan.perez@email.com" />
             </FormField>
 
-            <FormField label="Rol">
-                <Select className="w-full" defaultValue={user?.role}>
-                    <option value="user">Usuario</option>
-                    <option value="admin">Administrador</option>
-                </Select>
+            <FormField label="DNI">
+                <Input {...register("nDni")} placeholder="12345678" />
             </FormField>
 
-            <div className="grid gap-5 md:grid-cols-2">
-                <FormField label="Contraseña">
-                    <Input type="password" placeholder="******" />
-                </FormField>
+            <FormField label="Fecha de nacimiento">
+                <Input type="date" {...register("birthDate")} />
+            </FormField>
 
-                <FormField label="Confirmar contraseña">
-                    <Input type="password" placeholder="******" />
-                </FormField>
-            </div>
+            <FormActions>
+                <Button
+                    variant="secondary"
+                    type="button"
+                    disabled={isPending}
+                    onClick={onCancel}
+                    className="justify-center sm:w-auto"
+                >
+                    Cancelar
+                </Button>
 
-                <FormActions>
-                    <Button
-                        variant="secondary"
-                        type="button"
-                        onClick={onCancel}
-                        className="justify-center sm:w-auto"
-                    >
-                        Cancelar
-                    </Button>
-
-                    <Button className="justify-center sm:w-auto">
-                        {user ? "Actualizar" : "Guardar"}
-                    </Button>
-                </FormActions>
+                <Button disabled={!isDirty || isPending} className="justify-center sm:w-auto">
+                    {isPending
+                        ? "Actualizando..."
+                        : "Actualizar"
+                    }
+                </Button>
+            </FormActions>
         </form>
     )
 }

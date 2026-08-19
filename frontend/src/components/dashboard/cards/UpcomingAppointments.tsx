@@ -2,14 +2,17 @@ import AppointmentItem from "../../appointments/mobile/AppointmentItem"
 import DashboardSection from "../sections/DashboardSection"
 import Table from "../../ui/data-display/Table";
 import Button from "../../ui/buttons/Button";
-import { appointments } from "@/mocks/adminAppointments";
 import Link from "next/link";
 import EmptyState from "../../shared/empty-state/EmptyState";
 import { CalendarDays } from "lucide-react";
 import AppointmentCard from "../../appointments/cards/AppointmentCard";
+import { Appointment } from "@/types/models/appointment";
 
+interface UpcomingAppointmentsProps {
+    appointments: Appointment[]
+}
 
-export default function UpcomingAppointments() {
+export default function UpcomingAppointments({ appointments }: UpcomingAppointmentsProps) {
     return (
         <DashboardSection title="Próximos turnos" action={
             <Link href="/admin/appointments">
@@ -25,7 +28,7 @@ export default function UpcomingAppointments() {
                             {appointments.map(appointment => (
                                 <AppointmentItem
                                     key={appointment.id}
-                                    {...appointment}
+                                    appointment={appointment}
                                 />
                             ))}
                         </Table>
@@ -35,7 +38,7 @@ export default function UpcomingAppointments() {
                         {appointments.map(appointment => (
                             <AppointmentCard
                                 key={appointment.id}
-                                {...appointment}
+                                appointment={appointment}
                             >
                                 <Link
                                     href={`/admin/appointments/${appointment.id}`}

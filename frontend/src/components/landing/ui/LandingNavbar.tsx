@@ -1,5 +1,5 @@
 import Button from "@/components/ui/buttons/Button";
-import { Stethoscope } from "lucide-react";
+import { HeartPulse } from "lucide-react";
 import Link from "next/link";
 
 
@@ -10,7 +10,7 @@ export default function LandingNavbar() {
             <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
                 <Link href="/" className="flex items-center gap-2 sm:gap-3 transition-opacity hover:opacity-80">
                     <div className="rounded-lg bg-violet-600 p-1.5 sm:p-2">
-                        <Stethoscope className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                        <HeartPulse className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
 
                     <h1 className="hidden sm:block text-base sm:text-xl font-bold text-slate-800">

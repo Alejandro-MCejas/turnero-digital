@@ -12,22 +12,22 @@ const days = [
 ];
 
 interface ScheduleGridProps {
-    doctorId: number;
+    schedules: Schedule[]
     onEditSchedule: (schedule: Schedule) => void;
     onDeleteSchedule: (schedule: Schedule) => void;
 }
 
-export default function ScheduleGrid({ doctorId, onEditSchedule, onDeleteSchedule }: ScheduleGridProps) {
+export default function ScheduleGrid({ schedules, onEditSchedule, onDeleteSchedule }: ScheduleGridProps) {
     return (
         <div className="grid grid-cols-7 gap-2">
             {days.map(day => (
-                <ScheduleDay 
-                key={day} 
-                day={day} 
-                doctorId={doctorId}
-                onEditSchedule={onEditSchedule}
-                onDeleteSchedule={onDeleteSchedule}
-                 />
+                <ScheduleDay
+                    key={day}
+                    day={day}
+                    schedules={schedules}
+                    onEditSchedule={onEditSchedule}
+                    onDeleteSchedule={onDeleteSchedule}
+                />
             ))}
         </div>
     )

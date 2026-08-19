@@ -13,12 +13,12 @@ const days = [
 ];
 
 interface ScheduleMobileProps {
-    doctorId: number
+    schedules: Schedule[]
     onEditSchedule: (schedule: Schedule) => void
     onDeleteSchedule: (schedule: Schedule) => void
 }
 
-export default function ScheduleMobile({ doctorId, onEditSchedule, onDeleteSchedule }: ScheduleMobileProps) {
+export default function ScheduleMobile({ schedules, onEditSchedule, onDeleteSchedule }: ScheduleMobileProps) {
     return (
         <div className="space-y-4">
 
@@ -26,7 +26,7 @@ export default function ScheduleMobile({ doctorId, onEditSchedule, onDeleteSched
                 <ScheduleDayCard
                     key={day}
                     day={day}
-                    doctorId={doctorId}
+                    schedules={schedules}
                     onEditSchedule={onEditSchedule}
                     onDeleteSchedule={onDeleteSchedule}
                 />

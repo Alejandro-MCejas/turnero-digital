@@ -99,6 +99,35 @@
 
 /**
  * @swagger
+ * /users/me:
+ *   put:
+ *     summary: Update current authenticated user
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserDto'
+ *     responses:
+ *      200:
+ *        description: User profile updated successfully
+ *      400:
+ *        description: Validation failed
+ *      401:
+ *        description: Unauthorized
+ *      403:
+ *        description: Forbidden
+ *      404:
+ *        description: User not found
+ * 
+ */
+
+/**
+ * @swagger
  * /users/{id}:
  *   put:
  *     summary: Update user (Admin only)
