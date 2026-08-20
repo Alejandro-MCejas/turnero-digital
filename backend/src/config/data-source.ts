@@ -15,7 +15,7 @@ export const AppDataSource = new DataSource({
     username: ENV.DB_USERNAME,
     password: ENV.DB_PASSWORD,
     database: ENV.DB_NAME,
-    synchronize: true,
+    synchronize: ENV.NODE_ENV === "development" ? true : false,
     logging: false,
     entities: [User, Doctor, Credential, Appointment, DoctorSchedule],
     dropSchema: false
