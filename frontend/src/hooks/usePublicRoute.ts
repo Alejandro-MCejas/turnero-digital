@@ -11,17 +11,20 @@ export function usePublicRoute() {
     const { data: session, isLoading } = useSession()
 
     useEffect(() => {
-        if (isLoading) return;
+
+        if (isLoading) return
 
         if (!session) return
 
         router.replace(
-            session.role === userRole.Admin ? "/admin/dashboard" : "/patient/dashboard"
+            session.role === userRole.Admin
+                ? "/admin/dashboard"
+                : "/patient/dashboard"
         )
     }, [session, isLoading, router])
 
     return {
         isLoading,
-        canRender: !isLoading && !session,
+        canRender: !isLoading && !session
     }
 }
