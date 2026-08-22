@@ -22,10 +22,12 @@ export function useProtectedRoute(allowedRoles: UserRole[]) {
 
         if (!allowedRoles.includes(session.role)) {
             router.replace(
-                session.role === userRole.Admin ? "/admin/dashboard" : "/patient/dashboard"
+                session.role === userRole.Admin
+                    ? "/admin/dashboard"
+                    : "/patient/dashboard"
             )
         }
-    }, [session, isLoading, isError, allowedRoles, router])
+    }, [session, isLoading, isError, router, allowedRoles])
 
 
 
