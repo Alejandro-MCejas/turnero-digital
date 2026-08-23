@@ -73,7 +73,7 @@ export default function RegisterPage() {
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <Input
                                     {...register("name")}
-                                    placeholder="Ej: María Gonzáles"
+                                    placeholder="Ej: María Pérez"
                                     className="placeholder:text-slate-500 text-slate-800 pl-10 w-full"
                                 />
                             </div>
