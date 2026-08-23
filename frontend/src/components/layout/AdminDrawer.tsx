@@ -23,7 +23,7 @@ export default function AdminDrawer({ open, onClose }: AdminDrawerProps) {
 
             <aside
                 className={`
-                    fixed left-0 top-0 z-50 h-screen w-64
+                    fixed left-0 top-0 z-50 h-dvh w-64
                     transition-transform duration-300
                     lg:hidden
                     ${open ? "translate-x-0" : "-translate-x-full"}
