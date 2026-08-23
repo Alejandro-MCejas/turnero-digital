@@ -45,7 +45,7 @@ export default function PatientSidebar({ onNavigate }: PatientSidebarProps) {
 
             </div>
 
-            <nav className="flex-1 space-y-3 p-4">
+            <nav className="flex-1 overflow-y-auto space-y-3 p-4">
 
                 {patientMenuItems.map(item => {
                     const Icon = item.icon
@@ -75,7 +75,7 @@ export default function PatientSidebar({ onNavigate }: PatientSidebarProps) {
             </nav>
 
 
-            <footer className="border-t border-slate-200 p-4">
+            <footer className="shrink-0 border-t border-slate-200 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 <Link
                     href="/patient/profile"
                     onClick={onNavigate}
