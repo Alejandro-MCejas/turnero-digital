@@ -37,7 +37,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
                 </div>
             </div>
 
-            <nav className="flex-1 overflow-y-auto space-y-6 p-4">
+            <nav className="flex-1 space-y-6 p-4">
                 {adminMenuItems.map(section => (
                     <div key={section.title} className="space-y-2">
 

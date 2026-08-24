@@ -45,7 +45,7 @@ export default function PatientSidebar({ onNavigate }: PatientSidebarProps) {
 
             </div>
 
-            <nav className="flex-1 overflow-y-auto space-y-3 p-4">
+            <nav className="flex-1 space-y-3 p-4">
 
                 {patientMenuItems.map(item => {
                     const Icon = item.icon
