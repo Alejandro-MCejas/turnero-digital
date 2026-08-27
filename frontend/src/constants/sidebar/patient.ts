@@ -1,4 +1,4 @@
-import { CalendarDays, CalendarPlus, House, User, } from "lucide-react";
+import { CalendarDays, CalendarPlus, House, Stethoscope, User, } from "lucide-react";
 
 export const patientMenuItems = [
     {
@@ -15,6 +15,11 @@ export const patientMenuItems = [
         label: "Solicitar turno",
         href: "/patient/book-appointment",
         icon: CalendarPlus,
+    },
+    {
+        label: "Profesionales",
+        href: "/patient/professionals",
+        icon: Stethoscope
     },
     {
         label: "Mi perfil",
