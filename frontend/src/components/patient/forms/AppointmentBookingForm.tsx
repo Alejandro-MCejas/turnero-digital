@@ -12,12 +12,17 @@ import Loader from "@/components/ui/feedback/Loader";
 import EmptyState from "@/components/shared/empty-state/EmptyState";
 import { useDoctorAvailability } from "@/features/doctors/hooks/useDoctorAvailability";
 import { getLocaleDateString } from "@/lib/utils/getLocalDateString";
+import { useSearchParams } from "next/navigation";
 
 
 export default function AppointmentBookingForm() {
 
+    const searchParams = useSearchParams()
+
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
-    const [selectedDoctor, setSelectedDoctor] = useState("");
+
+    const [selectedDoctor, setSelectedDoctor] = useState(() => searchParams.get("doctorId") ?? "");
+
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedTime, setSelectedTime] = useState("");
 
@@ -34,8 +39,12 @@ export default function AppointmentBookingForm() {
         new Set(doctors.map(doctor => doctor.specialty))
     );
 
+    const selectedDoctorData = doctors.find(doctor => doctor.id === selectedDoctor)
+
+    const displayedSpecialty = selectedSpecialty || selectedDoctorData?.specialty || ""
+
     const availableDoctors = doctors.filter(
-        doctor => doctor.specialty === selectedSpecialty
+        doctor => doctor.specialty === displayedSpecialty
     );
 
     const handleSpecialtyChange = (specialty: string) => {
@@ -113,7 +122,7 @@ export default function AppointmentBookingForm() {
                     </label>
 
                     <Select
-                        value={selectedSpecialty}
+                        value={displayedSpecialty}
                         onChange={e => handleSpecialtyChange(e.target.value)}
                         className="w-full"
                     >
@@ -141,7 +150,7 @@ export default function AppointmentBookingForm() {
                     <Select
                         value={selectedDoctor}
                         onChange={e => handleDoctorChange(e.target.value)}
-                        disabled={!selectedSpecialty}
+                        disabled={!displayedSpecialty}
                         className="w-full disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                     >
 
@@ -258,7 +267,7 @@ export default function AppointmentBookingForm() {
                         onClick={handleSubmit}
                         className="mx-auto w-full max-w-xs justify-center sm:mx-0 sm:w-auto"
                         disabled={
-                            !selectedSpecialty ||
+                            !displayedSpecialty ||
                             !selectedDoctor ||
                             !selectedDate ||
                             !selectedTime ||
