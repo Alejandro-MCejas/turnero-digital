@@ -4,7 +4,7 @@ import PageHeader from "@/components/shared/headers/PageHeader";
 import AppointmentCard from "../cards/AppointmentCard";
 import QuickActionCard from "../cards/QuickActionCard";
 import NextAppointmentCard from "../cards/NextAppointmentCard";
-import { CalendarDays, CalendarPlus } from "lucide-react";
+import { CalendarDays, CalendarPlus, Stethoscope } from "lucide-react";
 import { useMyAppointments } from "@/features/appointments/hooks/useMyAppointments";
 import Loader from "@/components/ui/feedback/Loader";
 import { appointmentStatus } from "@/types/enums/appointmentStatus";
@@ -71,13 +71,20 @@ export default function PatientDashboardSection() {
                 />
             )}
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-3">
 
                 <QuickActionCard
                     title="Solicitar turno"
                     description="Reservá un nuevo turno con un profesional."
                     href="/patient/book-appointment"
                     icon={CalendarPlus}
+                />
+
+                <QuickActionCard
+                    title="Profesionales"
+                    description="Consultá nuestros profesionales y sus horarios."
+                    href="/patient/professionals"
+                    icon={Stethoscope}
                 />
 
                 <QuickActionCard

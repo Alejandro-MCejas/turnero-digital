@@ -4,6 +4,8 @@ import { getStatusVariant } from "@/lib/utils/getStatusVariant"
 import { CalendarDays, Clock3, Stethoscope } from "lucide-react"
 import Link from "next/link"
 import { Appointment } from "@/types/models/appointment"
+import { formatDate } from "@/lib/utils/formatDate"
+import { appointmentStatusLabel } from "@/constants/status/appointmentStatusLabel"
 
 interface NextAppointmentCardProps {
     appointment: Appointment
@@ -32,7 +34,7 @@ export default function NextAppointmentCard({ appointment }: NextAppointmentCard
                     <div className="flex items-center gap-2">
                         <CalendarDays className="h-5 w-5 text-slate-500" />
 
-                        <span>{appointment.date}</span>
+                        <span>{formatDate(appointment.date)}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -49,7 +51,7 @@ export default function NextAppointmentCard({ appointment }: NextAppointmentCard
                         variant={getStatusVariant(appointment.status)}
                         className="px-3 py-1 text-sm"
                     >
-                        {appointment.status}
+                        {appointmentStatusLabel[appointment.status]}
                     </Badge>
 
                     <Link href={`/patient/appointments/${appointment.id}`}>
