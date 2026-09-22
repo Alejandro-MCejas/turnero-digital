@@ -136,6 +136,9 @@ export default function RegisterPage() {
                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
+                            {errors.confirmPassword && (
+                                <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -149,12 +152,10 @@ export default function RegisterPage() {
                                     className=" text-slate-800 placeholder:text-slate-500 pl-10 w-full"
                                     {...register("birthDate")}
                                 />
-
-                                {errors.birthDate && (
-                                    <p className="text-xs text-red-500">{errors.birthDate.message}</p>
-                                )}
-
                             </div>
+                            {errors.birthDate && (
+                                <p className="text-xs text-red-500">{errors.birthDate.message}</p>
+                            )}
                         </div>
 
                         <div>
@@ -167,6 +168,9 @@ export default function RegisterPage() {
                                     className="placeholder:text-slate-500 text-slate-800 pl-10 w-full"
                                 />
                             </div>
+                            {errors.nDni && (
+                                <p className="text-xs text-red-500 mt-1">{errors.nDni.message}</p>
+                            )}
                         </div>
 
                         <Button
